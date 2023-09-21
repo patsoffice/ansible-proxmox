@@ -1,0 +1,6 @@
+---
+
+- name: Restart cpufrequtils
+  ansible.builtin.systemd:
+    name: cpufrequtils.service
+    state: restarted

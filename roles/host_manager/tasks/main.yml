@@ -1,0 +1,31 @@
+---
+- name: process hosts passed via env
+  set_fact:
+    select_host: "\
+      {{ select_hosts | default({}) | combine({ item: proxmox_hosts[item] }) }}"
+  when: host is defined
+  loop: '{{ container | split(",") }}'
+  tags:
+    - host_manager
+
+- name: get list of hosts to work on
+  set_fact:
+    host_keys: "{{ host_keys | default([]) + [ item.key ] }}"
+  loop: "{{ proxmox_hosts | dict2items if select_hosts is not defined else select_hosts | dict2items }}"
+  tags:
+    - host_manager
+
+- name: Add hosts to proxmox_hosts group and inject needed role variables
+  ansible.builtin.add_host:
+    name: '{{ proxmox_hosts[item].api_host }}'
+    groups: proxmox_hosts
+    proxmox_node: '{{ item }}'
+    proxmox_api_host: '{{ proxmox_hosts[item].api_host }}'
+    proxmox_api_user: '{{ proxmox_hosts[item].api_user }}'
+    proxmox_api_password: '{{ proxmox_hosts[item].api_password }}'
+    proxmox_zfs_pools: '{{ proxmox_hosts[item].zfs_pools }}'
+    proxmox_containers: '{{ proxmox_hosts[item].containers if proxmox_hosts[item].containers is defined }}'
+  loop: '{{ host_keys }}'
+  no_log: true
+  tags:
+    - host_manager

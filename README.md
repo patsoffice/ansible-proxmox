@@ -1,2 +1,17 @@
 # ansible-proxmox
+
 An Ansible playbook for managing a homelab of Proxmox-VE servers
+
+To run all tasks on the Proxmox-VE hosts and any containers installed on them, the simplest invocation is:
+
+```sh
+./setup.sh
+```
+
+To run individual tasks, it's necessary to include some extra tags:
+
+```sh
+./setup.sh --tags host_manager,apt
+```
+
+The `host_manger` role adds each host to the `proxmox_hosts` group.

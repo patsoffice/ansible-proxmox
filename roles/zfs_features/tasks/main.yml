@@ -1,0 +1,9 @@
+- name: Turn off atime on ZFS filesystems
+  community.general.zfs:
+    name: '{{ item }}'
+    state: present
+    extra_zfs_properties:
+      atime: off
+  with_items: '{{ proxmox_zfs_pools }}'
+  tags:
+    - zfs_features

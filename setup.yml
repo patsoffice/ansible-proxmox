@@ -1,0 +1,19 @@
+- hosts: init
+  gather_facts: no
+  roles:
+    - host_manager
+
+- hosts: proxmox_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - apt
+    - zfs_features
+    - cpufreq
+    - postfix
+
+- hosts: postfix_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - postfix

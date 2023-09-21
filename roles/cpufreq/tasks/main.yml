@@ -1,0 +1,19 @@
+---
+
+- name: Install the package "cpufrequtils"
+  apt:
+    name: cpufrequtils
+  tags:
+    - cpufreq
+
+- name: copy the cpufrequtils config file
+  ansible.builtin.copy:
+    src: cpufrequtils
+    dest: /etc/default/cpufrequtils
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart cpufrequtils
+  tags:
+    - cpufreq

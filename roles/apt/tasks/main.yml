@@ -1,0 +1,47 @@
+---
+- name: Remove pve-enterprise repository
+  ansible.builtin.apt_repository:
+    repo: deb https://enterprise.proxmox.com/debian/pve bookworm pve-enterprise
+    state: absent
+    update_cache: false
+  tags:
+    - apt
+
+- name: Remove ceph repository
+  ansible.builtin.apt_repository:
+    repo: deb https://enterprise.proxmox.com/debian/ceph-quincy bookworm enterprise
+    state: absent
+    update_cache: false
+  tags:
+    - apt
+
+- name: Add pve-no-subscription repository
+  ansible.builtin.apt_repository:
+    repo: deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription
+    state: present
+    update_cache: false
+  tags:
+    - apt
+
+- name: Add ceph-no-subscription repository
+  ansible.builtin.apt_repository:
+    repo: deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription
+    state: present
+    update_cache: false
+  tags:
+    - apt
+
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: true
+  tags:
+    - apt
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  tags:
+    - apt

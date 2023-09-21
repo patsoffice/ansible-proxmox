@@ -1,0 +1,81 @@
+---
+- name: apt-get update and install libsasl2-modules
+  ansible.builtin.apt:
+    name: libsasl2-modules
+    update_cache: yes
+  tags:
+    - postfix
+
+- name: copy the postfix templates
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '{{ item.mode | default("0600") }}'
+    owner: '{{ item.owner | default("root") }}'
+    group: '{{ item.group | default("root") }}'
+  no_log: true
+  loop:
+    - { src: header_checks, dest: /etc/postfix/header_checks }
+    - { src: sender_canonical_maps, dest: /etc/postfix/sender_canonical_maps }
+    - { src: sasl_passwd, dest: /etc/postfix/sasl_passwd }
+  tags:
+    - postfix
+
+- name: Build the sender_canonical_maps DB
+  ansible.builtin.command: /usr/sbin/postmap -v hash:/etc/postfix/sender_canonical_maps
+  args:
+    creates: /etc/postfix/sender_canonical_maps.db
+  tags:
+    - postfix
+
+- name: Build the sasl_passwd DB
+  ansible.builtin.command: /usr/sbin/postmap -v hash:/etc/postfix/sasl_passwd
+  args:
+    creates: /etc/postfix/sasl_passwd.db
+  tags:
+    - postfix
+
+- name: Get stat output of /etc/postfix/main.cf
+  ansible.builtin.stat:
+    path: /etc/postfix/main.cf
+  register: orig_main_cf
+  tags:
+    - postfix
+
+# TODO: check if these settings are made in an efficient way so we skip unnecessary updates.
+#       THen we can remove the stat tasks above and below as well.
+- name: Configure postfix
+  ansible.builtin.command:
+    argv:
+      - /usr/sbin/postconf
+      - "header_checks = regexp:/etc/postfix/header_checks"
+      - "relayhost = [{{ relay_host }}]:465"
+      - "sender_canonical_maps = regexp:/etc/postfix/sender_canonical_maps"
+      - "smtp_sasl_auth_enable = yes"
+      - "smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd"
+      - "smtp_sasl_security_options = noanonymous"
+      - "smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt"
+      - "smtp_tls_note_starttls_offer = yes"
+      - "smtp_tls_security_level = encrypt"
+      - "smtp_tls_wrappermode = yes"
+      - "smtp_use_tls = yes"
+      - "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject"
+  no_log: true
+  tags:
+    - postfix
+
+- name: Get stat output of /etc/postfix/main.cf
+  ansible.builtin.stat:
+    path: /etc/postfix/main.cf
+  register: new_main_cf
+  tags:
+    - postfix
+
+- name: Restart service postfix
+  ansible.builtin.systemd:
+    state: restarted
+    name: postfix
+  when:
+    orig_main_cf.stat.checksum != new_main_cf.stat.checksum
+  tags:
+    - postfix
