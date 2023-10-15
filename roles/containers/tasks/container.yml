@@ -1,0 +1,111 @@
+---
+- name: Set up standard mounts
+  ansible.builtin.set_fact:
+    lxc_mounts:
+      rootfs: '{{ item.storage }}:{{ item.rootfs_size }}'
+  tags:
+    - containers
+
+- name: Add additional mounts
+  ansible.builtin.set_fact:
+    lxc_mounts: '{{ lxc_mounts | ansible.builtin.combine( item.mounts) }}'
+  when: item.mounts is defined
+  tags:
+    - containers
+
+- name: Use IP if it is explicitly set
+  ansible.builtin.set_fact:
+    container_ip: '{{ item.container_ip }}'
+  when: item.container_ip is defined
+  tags:
+    - containers
+
+- name: Set IP based on vmid
+  ansible.builtin.set_fact:
+    container_ip: '{{ networking_subnet }}.{{ item.vmid }}'
+  when: item.container_ip is not defined
+  tags:
+    - containers
+
+- name: Set container GW from the default
+  ansible.builtin.set_fact:
+    container_gw: '{{ networking_default_gateway }}'
+  when: item.container_gw is not defined
+  tags:
+    - containers
+
+- name: Use subnet size if it is explicitly set
+  ansible.builtin.set_fact:
+    container_subnet_size: '{{ item.container_subnet_size }}'
+  when: item.container_subnet_size is defined
+  tags:
+    - containers
+
+- name: Set container subnet size from the default
+  ansible.builtin.set_fact:
+    container_subnet_size: '{{ networking_subnet_size }}'
+  when: item.container_subnet_size is not defined
+  tags:
+    - containers
+
+- name: 'Create the {{ item.hostname }} container'
+  community.general.proxmox:
+    node: '{{ proxmox_node }}'
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    api_host: '{{ proxmox_api_host }}'
+    vmid: '{{ item.vmid | default("") }}'
+    password: '{{ item.password }}'
+    pubkey: '{{ item.pubkey | default(containers_default_pubkey) }}'
+    unprivileged: '{{ item.unprivileged | default("false") }}'
+    hostname: '{{ item.hostname }}'
+    onboot: '{{ item.onboot | default("true") }}'
+    ostemplate: 'local:vztmpl/{{ item.ostemplate }}'
+    state: 'present'
+    cores: '{{ item.cores | default(1) }}'
+    memory: '{{ item.memory | default(512) }}'
+    swap: '{{ item.swap | default(512) }}'
+    storage: '{{ item.storage }}'
+    mounts: '{{ lxc_mounts }}'
+    netif:
+      net0: 'name=eth0,bridge=vmbr0,firewall=1,gw={{ container_gw }},ip={{ container_ip }}//{{ container_subnet_size }},type=veth'
+    features: '{{ item.features | default([]) }}'
+    proxmox_default_behavior: '{{ item.proxmox_default_behaviors | default("no_defaults") }}'
+  tags:
+    - containers
+
+- name: 'Update the {{ item.hostname }} LXC container config'
+  lineinfile:
+    path: '/etc/pve/nodes/{{ proxmox_node }}/lxc/{{ item.vmid }}.conf'
+    regexp: '{{ config_change }}'
+    line: '{{ config_change }}'
+  loop: '{{ item.config_changes | default([]) }}'
+  loop_control:
+    loop_var: 'config_change'
+  tags:
+    - containers
+
+- name: 'Start the {{ item.hostname }} container'
+  community.general.proxmox:
+    node: '{{ proxmox_node }}'
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    api_host: '{{ proxmox_api_host }}'
+    vmid: '{{ item.vmid | default("") }}'
+    hostname: '{{ item.hostname }}'
+    state: 'started'
+  tags:
+    - containers
+
+- name: Add hosts to {{ item.config_task | default('config_task') }} group and inject needed role variables
+  ansible.builtin.add_host:
+    name: '{{ container_ip }}'
+    groups: '{{ item.config_task }}_hosts'
+    container_hostname: '{{ item.hostname }}'
+    traefik_hostname: '{{ item.traefik_hostname | default("") }}'
+    traefik_service: '{{ item.traefik_service | default("") }}'
+    service_port: '{{ item.service_port | default("") }}'
+    additional_vars: '{{ item.additional_vars | default({}) }}'
+  when: item.config_task is defined
+  tags:
+    - containers

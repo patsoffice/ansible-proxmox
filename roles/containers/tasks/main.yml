@@ -1,0 +1,32 @@
+---
+- name: Check if containers are present
+  set_fact:
+    has_containers: "{{ proxmox_containers != '' | default(false) }}"
+  tags:
+    - containers
+
+- name: Install the package "python3-proxmoxer"
+  apt:
+    name: python3-proxmoxer
+  when: has_containers
+  tags:
+    - containers
+
+- name: Download container template(s)
+  community.general.proxmox_template:
+    node: '{{ proxmox_node }}'
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    api_host: '{{ proxmox_api_host }}'
+    storage: local
+    content_type: vztmpl
+    template: '{{ item.ostemplate }}'
+  loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
+  tags:
+    - containers
+
+- name: run container task
+  include_tasks: container.yml
+  loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
+  tags:
+    - containers

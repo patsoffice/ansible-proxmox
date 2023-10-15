@@ -1,5 +1,21 @@
 # group_vars Documentation
 
+## all/containers.yml
+
+The `containers.yml` variables have default information needed for any containers defined. The following keys are required:
+
+```yaml
+containers_default_pubkey: 'ssh-rsa ...'
+```
+
+The `networking.yml` variables have container networking information. The following keys are required:
+
+```yaml
+networking_subnet: 192.168.0
+networking_subnet_size: 24
+networking_default_gateway: 192.168.0.1
+```
+
 ## init/proxmox_hosts.yml
 
 The `proxmox_hosts.yml` variables have all the information we need to configure Proxmox-VE hosts. This includes setting up the hosts and creating containers on them. For now, containers will be statically defined but they can likely migrate from one host to another
