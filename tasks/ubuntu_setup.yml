@@ -1,0 +1,33 @@
+---
+- name: Create the group
+  ansible.builtin.group:
+    name: '{{ groupname }}'
+    gid: '{{ gid }}'
+    state: present
+  when: groupname is defined and gid is defined
+
+- name: Create the user
+  ansible.builtin.user:
+    name: '{{ username }}'
+    uid: '{{ uid | default(1000) }}'
+    group: '{{ groupname | default(omit) }}'
+    groups: '{{ groupnames | default(omit) }}'
+    shell: '{{ shell | default("/usr/sbin/nologin") }}'
+    append: '{{ groupnames is defined | bool }}'
+  when: username is defined
+
+- name: Set timezone to America/Los_Angeles
+  community.general.timezone:
+    name: America/Los_Angeles
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: apt install packages
+  ansible.builtin.apt:
+    pkg: '{{ packages }}'
+  when: packages is defined

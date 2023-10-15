@@ -1,0 +1,15 @@
+  [http.routers]
+  # Define a connection between requests and services
+    [http.routers.{{ traefik_service }}]
+      rule = "{{ traefik_host_rule }}"
+      entrypoints = ["websecure"]
+      service = "{{ traefik_service }}"
+    [http.routers.{{ traefik_service }}.tls]
+      certResolver = "cloudflare"
+
+  [http.services]
+    [http.services.{{ traefik_service }}]
+      # Define how to reach an existing service on our infrastructure
+      [http.services.{{ traefik_service }}.loadBalancer]
+        [[http.services.{{ traefik_service }}.loadBalancer.servers]]
+          url = "{{ traefik_lb_url }}"

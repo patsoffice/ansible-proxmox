@@ -1,0 +1,15 @@
+---
+- name: copy the service file to systemd's location
+  ansible.builtin.copy:
+    src: '{{ systemd_unit }}'
+    dest: /etc/systemd/system/{{ systemd_unit }}
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Enable the service and set the state to "{{ state }}"
+  ansible.builtin.systemd:
+    state: '{{ state }}'
+    daemon_reload: true
+    enabled: true
+    name: '{{ systemd_unit }}'

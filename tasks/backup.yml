@@ -1,0 +1,29 @@
+- name: copy the backup script
+  template:
+    src: 'backup.sh'
+    dest: '/opt/backup.sh'
+    mode: 0755
+    owner: 'root'
+    group: 'root'
+
+- name: Creates a backup cron file under /etc/cron.d
+  ansible.builtin.cron:
+    name: backup
+    minute: '0'
+    hour: '0'
+    user: root
+    job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/backup.sh'
+    cron_file: backup
+
+- name: Add a MAILTO variable
+  ansible.builtin.cron:
+    name: MAILTO
+    env: true
+    job: '{{ cron_mailto }}'
+    user: root
+    cron_file: backup
+
+- name: Add hosts to postfix_hosts
+  ansible.builtin.add_host:
+    name: '{{ inventory_hostname }}'
+    groups: 'postfix_hosts'

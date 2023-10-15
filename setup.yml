@@ -11,7 +11,15 @@
     - zfs_features
     - cpufreq
     - postfix
+    - containers
 
+- hosts: octoprint_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - octoprint
+
+# This needs to be last so that all containers can have Postfix set up too
 - hosts: postfix_hosts
   gather_facts: yes
   remote_user: root

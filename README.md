@@ -14,4 +14,4 @@ To run individual tasks, it's necessary to include some extra tags:
 ./setup.sh --tags host_manager,apt
 ```
 
-The `host_manger` role adds each host to the `proxmox_hosts` group.
+The `host_manager` role adds each host to the `proxmox_hosts` group.

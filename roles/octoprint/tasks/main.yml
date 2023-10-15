@@ -1,0 +1,95 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: octoprint
+    groupnames:
+      - adm
+      - sudo
+      - tty
+      - dialout
+    shell: /bin/bash
+    packages:
+      - build-essential
+      - git
+      - libyaml-dev
+      - nfs-common
+      - python3-dev
+      - python3-pip
+      - python3-setuptools
+      - python3-venv
+      - python3-wheel
+      - rdiff-backup
+  tags:
+    - octoprint
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: octoprint
+        group: octoprint
+      - path: /home/octoprint/Octoprint
+        owner: octoprint
+        group: octoprint
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - octoprint
+
+- name: Ensure the virtual environment is created
+  ansible.builtin.shell:
+    cmd: python3 -m venv venv
+    chdir: /home/octoprint/Octoprint/
+  become: true
+  become_user: octoprint
+  tags:
+    - octoprint
+
+- name: Install Octoprint and its dependencies into the venv
+  ansible.builtin.pip:
+    name: octoprint
+    state: latest
+    virtualenv: /home/octoprint/Octoprint/venv
+    virtualenv_site_packages: true
+  become: true
+  become_user: octoprint
+  register: pip_install
+  tags:
+    - octoprint
+
+- name: Check that /config/config.yaml exists
+  ansible.builtin.stat:
+    path: /config/config.yaml
+  register: octoprint_config
+  tags:
+    - octoprint
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/octoprint/ /config
+  ignore_errors: true
+  when: not octoprint_config.stat.exists
+  tags:
+    - octoprint
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'octoprint.service'
+    state: '{{ pip_install.changed | ternary("restarted", "started") }}'
+  tags:
+    - octoprint
+
+- import_tasks: traefik.yml
+  tags:
+    - octoprint
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/octoprint'
+  tags:
+    - octoprint

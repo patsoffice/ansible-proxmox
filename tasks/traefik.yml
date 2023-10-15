@@ -1,0 +1,21 @@
+---
+- name: 'Store traefik info for {{ traefik_service }}'
+  ansible.builtin.set_fact:
+    traefik_service: '{{ traefik_service }}'
+    traefik_host_rule: 'Host(`{{ traefik_hostname }}`)'
+    traefik_lb_url: '{{ traefik_url_prefix | default("http") }}://{{ inventory_hostname }}:{{ service_port }}'
+
+- name: copy dynamic config files
+  template:
+    src: 'traefik-router.toml'
+    dest: '{{ traefik_config_path }}/{{ traefik_service }}.toml'
+    mode: 0644
+    owner: root
+    group: root
+    seuser: unconfined_u
+    serole: object_r
+    setype: container_file_t
+    selevel: s0
+  delegate_to: '{{ traefik_host }}'
+  remote_user: '{{ traefik_user }}'
+  become: true

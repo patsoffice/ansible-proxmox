@@ -1,0 +1,5 @@
+---
+backup_host: '192.168.1.0'
+backup_path: /mnt/tank/backups/apps
+backup_owner: '1000'
+backup_group: '1000'
