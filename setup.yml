@@ -13,6 +13,12 @@
     - postfix
     - containers
 
+- hosts: esphome_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - esphome
+
 - hosts: octoprint_hosts
   gather_facts: yes
   remote_user: root

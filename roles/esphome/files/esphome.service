@@ -1,0 +1,15 @@
+[Unit]
+Description=ESPHome Dashboard
+After=network.target
+
+[Service]
+User=esphome
+
+Environment=PATH=/opt/esphome/ESPHome/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/opt/esphome/ESPHome/venv/bin/esphome dashboard /config
+Environment="LC_ALL=C.UTF-8"
+Environment="LANG=C.UTF-8"
+Type=exec
+
+[Install]
+WantedBy=multi-user.target
