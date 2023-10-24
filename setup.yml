@@ -19,6 +19,12 @@
   roles:
     - esphome
 
+- hosts: lidarr_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - lidarr
+
 - hosts: octoprint_hosts
   gather_facts: yes
   remote_user: root

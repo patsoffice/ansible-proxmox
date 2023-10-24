@@ -1,0 +1,130 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: lidarr
+    uid: '{{ music_uid }}'
+    packages:
+      - binutils
+      - libchromaprint-tools
+      - mediainfo
+      - nfs-common
+      - rdiff-backup
+      - sqlite3
+  tags:
+    - lidarr
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: lidarr
+        group: media
+      - path: /opt/lidarr
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ music_host }}:{{ music_path }}'
+        dest: /music
+        owner: '{{ music_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ download_host }}:{{ download_path }}'
+        dest: /downloads
+        owner: '{{ download_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - lidarr
+
+- name: Get Lidarr URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ lidarr_master_url | regex_search('/v([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - lidarr
+
+- name: Check that /opt/lidarr/Lidarr.Core.dll exists
+  ansible.builtin.stat:
+    path: /opt/lidarr/Lidarr.Core.dll
+  register: lidarr_core_dll
+  tags:
+    - lidarr
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "strings /opt/lidarr/Lidarr.Core.dll | grep Version= | grep Lidarr.Common | head -1 | awk -F'Version=' '{ print $2 }' | awk -F, '{print $1}'"
+  register: file_version
+  when: lidarr_core_dll.stat.exists
+  tags:
+    - lidarr
+
+- name: Set a default Lidarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - lidarr
+
+- name: Download latest lidarr
+  ansible.builtin.get_url:
+    url: '{{ lidarr_master_url }}'
+    dest: /opt/lidarr.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - lidarr
+
+- name: Extract the lidarr tarball
+  ansible.builtin.unarchive:
+    src: /opt/lidarr.tar.gz
+    dest: /opt/lidarr
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != file_version.stdout
+  tags:
+    - lidarr
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/lidarr.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - lidarr
+
+- name: Check that /config/lidarr.db exists
+  ansible.builtin.stat:
+    path: /config/lidarr.db
+  register: lidarr_db
+  tags:
+    - lidarr
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/lidarr/ /config
+  ignore_errors: true
+  when: not lidarr_db.stat.exists
+  tags:
+    - lidarr
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'lidarr.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - lidarr
+
+- import_tasks: traefik.yml
+  tags:
+    - lidarr
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/lidarr'
+  tags:
+    - lidarr
