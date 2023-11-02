@@ -1,0 +1,156 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: sonarr
+    uid: '{{ tv_uid }}'
+    packages:
+      - binutils
+      - mediainfo
+      - mono-runtime
+      - nfs-common
+      - rdiff-backup
+      - libmono-system-net-http4.0-cil
+      - libmono-corlib4.5-cil
+      - libmono-microsoft-csharp4.0-cil
+      - libmono-posix4.0-cil
+      - libmono-system-componentmodel-dataannotations4.0-cil
+      - libmono-system-configuration-install4.0-cil
+      - libmono-system-configuration4.0-cil
+      - libmono-system-core4.0-cil
+      - libmono-system-data-datasetextensions4.0-cil
+      - libmono-system-data4.0-cil
+      - libmono-system-identitymodel4.0-cil
+      - libmono-system-io-compression4.0-cil
+      - libmono-system-numerics4.0-cil
+      - libmono-system-runtime-serialization4.0-cil
+      - libmono-system-security4.0-cil
+      - libmono-system-servicemodel4.0a-cil
+      - libmono-system-serviceprocess4.0-cil
+      - libmono-system-transactions4.0-cil
+      - libmono-system-web4.0-cil
+      - libmono-system-xml-linq4.0-cil
+      - libmono-system-xml4.0-cil
+      - libmono-system4.0-cil
+      - mono-runtime
+      - mono-vbnc
+      - mediainfo
+      - xmlstarlet
+  tags:
+    - sonarr
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: sonarr
+        group: media
+      - path: /opt/sonarr
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ tv_host }}:{{ tv_path }}'
+        dest: /tv
+        owner: '{{ tv_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ download_host }}:{{ download_path }}'
+        dest: /downloads
+        owner: '{{ download_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - sonarr
+
+- name: Get Sonarr URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ sonarr_master_url | regex_search('main/([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - sonarr
+
+- name: Check that /opt/sonarr/Sonarr.Core.dll exists
+  ansible.builtin.stat:
+    path: /opt/sonarr/Sonarr.Core.dll
+  register: sonarr_core_dll
+  tags:
+    - sonarr
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "strings /opt/sonarr/Sonarr.Core.dll | grep Version= | grep Sonarr.Common | head -1 | awk -F'Version=' '{ print $2 }' | awk -F, '{print $1}'"
+  register: file_version
+  when: sonarr_core_dll.stat.exists
+  tags:
+    - sonarr
+
+- name: Set a default Sonarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - sonarr
+
+- name: Download latest sonarr
+  ansible.builtin.get_url:
+    url: '{{ sonarr_master_url }}'
+    dest: /opt/sonarr.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - sonarr
+
+- name: Extract the sonarr tarball
+  ansible.builtin.unarchive:
+    src: /opt/sonarr.tar.gz
+    dest: /opt/sonarr
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != file_version.stdout
+  tags:
+    - sonarr
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/sonarr.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - sonarr
+
+- name: Check that /config/sonarr.db exists
+  ansible.builtin.stat:
+    path: /config/sonarr.db
+  register: sonarr_db
+  tags:
+    - sonarr
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/sonarr/ /config
+  ignore_errors: true
+  when: not sonarr_db.stat.exists
+  tags:
+    - sonarr
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'sonarr.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - sonarr
+
+- import_tasks: traefik.yml
+  tags:
+    - sonarr
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/sonarr'
+  tags:
+    - sonarr

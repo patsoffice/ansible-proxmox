@@ -1,0 +1,18 @@
+[Unit]
+Description=Sonarr Daemon
+After=syslog.target network.target
+
+[Service]
+User=sonarr
+Group=media
+UMask=0002
+
+Type=simple
+WorkingDirectory=/opt/sonarr
+ExecStart=/usr/bin/mono Sonarr.exe -nobrowser -data=/config/
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
