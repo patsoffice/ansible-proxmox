@@ -1,0 +1,136 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: sabnzbd
+    uid: '{{ download_uid }}'
+    packages:
+    - nfs-common
+    - par2
+    - python3-pip
+    - p7zip-full
+    - p7zip-rar
+    - rdiff-backup
+    - unzip
+    - unrar
+  tags:
+    - sabnzbd
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: sabnzbd
+        group: media
+      - path: /opt/sabnzbd
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ download_host }}:{{ download_path }}'
+        dest: /downloads
+        owner: '{{ download_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - sabnzbd
+
+- name: Get Sabnzbd URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ sabnzbd_package_url | regex_search('download/([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - sabnzbd
+
+- name: Check that /opt/sabnzbd/sabnzbd/version.py exists
+  ansible.builtin.stat:
+    path: /opt/sabnzbd/sabnzbd/version.py
+  register: sabnzbd_version
+  tags:
+    - sabnzbd
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/usr/bin/grep ^__version__ /opt/sabnzbd/sabnzbd/version.py | awk -F\\\" '{print $2}'"
+  register: file_version
+  when: sabnzbd_version.stat.exists
+  tags:
+    - sabnzbd
+
+- name: Set a default Sabnzbd file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - sabnzbd
+
+- name: Download sabnzbd
+  ansible.builtin.get_url:
+    url: '{{ sabnzbd_package_url }}'
+    dest: /opt/sabnzbd/sabnzbd.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - sabnzbd
+
+- name: Extract the sabnzbd package
+  ansible.builtin.unarchive:
+    src: /opt/sabnzbd/sabnzbd.tar.gz
+    dest: /opt/sabnzbd
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  no_log: true
+  when: web_version != file_version.stdout
+  tags:
+    - sabnzbd
+
+- name: Install the requirements
+  ansible.builtin.pip:
+    requirements: /opt/sabnzbd/requirements.txt
+  tags:
+    - sabnzbd
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/sabnzbd/sabnzbd.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - sabnzbd
+
+- name: Check that /config/sabnzbd.ini exists
+  ansible.builtin.stat:
+    path: /config/sabnzbd.ini
+  register: sabnzbd_ini
+  tags:
+    - sabnzbd
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/sabnzbd/ /config
+  ignore_errors: true
+  when: not sabnzbd_ini.stat.exists
+  tags:
+    - sabnzbd
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'sabnzbd.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - sabnzbd
+
+- import_tasks: traefik.yml
+  tags:
+    - sabnzbd
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/sabnzbd'
+  tags:
+    - sabnzbd

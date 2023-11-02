@@ -1,5 +1,7 @@
 ---
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
+# https://github.com/sabnzbd/sabnzbd/releases
+sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.1.0/SABnzbd-4.1.0-src.tar.gz
 # https://github.com/Sonarr/Sonarr/tags
 sonarr_master_url: https://download.sonarr.tv/v3/main/3.0.10.1567/Sonarr.main.3.0.10.1567.linux.tar.gz

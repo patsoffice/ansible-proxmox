@@ -1,0 +1,18 @@
+[Unit]
+Description=Sabnzbd Server Daemon
+After=network.target
+
+[Service]
+User=sabnzbd
+Group=media
+UMask=0002
+
+Type=simple
+WorkingDirectory=/config
+ExecStart=python3 -OO /opt/sabnzbd/SABnzbd.py --config-file /config --server 0.0.0.0
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

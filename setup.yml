@@ -31,6 +31,12 @@
   roles:
     - octoprint
 
+- hosts: sabnzbd_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - sabnzbd
+
 - hosts: sonarr_hosts
   gather_facts: yes
   remote_user: root
