@@ -27,6 +27,8 @@ The `cron.yml` variables have default information needed for correctly setting c
 cron_mailto: user@domain.com
 ```
 
+## all/networking.yml
+
 The `networking.yml` variables have container networking information. The following keys are required:
 
 ```yaml
@@ -34,6 +36,12 @@ networking_subnet: 192.168.0
 networking_subnet_size: 24
 networking_default_gateway: 192.168.0.1
 ```
+
+## all/package-urls.yml
+
+The `package-urls.yml` variables have links to packages that roles will use to install them in containers.
+
+## all/traefik.yml
 
 The `traefik.yml` variables have information about the traefik instance that is used as a reverse proxy. A file is created on the remote server configuring the reverse proxy. The following keys are required:
 

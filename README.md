@@ -15,3 +15,9 @@ To run individual tasks, it's necessary to include some extra tags:
 ```
 
 The `host_manager` role adds each host to the `proxmox_hosts` group.
+
+To run a task involving a container, the `containers` tag is required:
+
+```sh
+./setup.sh --tags host_manager,containers,netboot_xyz
+```
