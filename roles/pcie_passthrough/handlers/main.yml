@@ -1,0 +1,7 @@
+---
+
+- name: update grub
+  shell: update-grub
+
+- name: proxmox-boot-tool refresh
+  shell: proxmox-boot-tool refresh

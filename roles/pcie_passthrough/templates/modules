@@ -1,0 +1,17 @@
+# /etc/modules: kernel modules to load at boot time.
+#
+# This file contains the names of kernel modules that should be loaded
+# at boot time, one per line. Lines beginning with "#" are ignored.
+
+# BEGIN ANSIBLE MANAGED BLOCK
+# Modules required for PCI passthrough
+vfio
+vfio_iommu_type1
+vfio_pci
+vfio_virqfd
+{% if enable_gvt is defined %}
+# Modules required for Intel GVT
+kvmgt
+exngt
+vfio-mdev
+{% endif %}

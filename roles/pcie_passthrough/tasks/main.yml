@@ -1,0 +1,118 @@
+---
+- name: Fail if "architecture" is undefined
+  ansible.builtin.fail: msg="This role requires 'architecture' to be defined."
+  when: architecture is undefined
+  tags:
+    - pcie_passthrough
+
+#
+# Update grub config
+#
+- name: check if *_iommu=on is configured in the grub boot command
+  lineinfile:
+    backup: true
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT=".*{{ architecture }}_iommu=on iommu=pt'
+    state: absent
+  check_mode: true
+  register: grub_cmdline_check_iommu_on
+  changed_when: false
+  tags:
+    - pcie_passthrough
+
+- name: insert *_iommu=on in grub boot if missing
+  lineinfile:
+    backrefs: true
+    path: /etc/default/grub
+    regexp: "^(GRUB_CMDLINE_LINUX_DEFAULT=\".*)\"$"
+    line: '\1 {{ architecture }}_iommu=on iommu=pt"'
+  when: grub_cmdline_check_iommu_on.found == 0
+  notify: update grub
+  tags:
+    - pcie_passthrough
+
+- name: check if i915.enable_gvt=1 is configured in the grub boot command
+  lineinfile:
+    backup: true
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT=".* i915.enable_gvt=1'
+    state: absent
+  check_mode: true
+  register: grub_cmdline_check_enable_gvt
+  changed_when: false
+  when: enable_gvt is defined
+  tags:
+    - pcie_passthrough
+
+- name: insert i915.enable_gvt=1 in grub boot if missing
+  lineinfile:
+    backrefs: true
+    path: /etc/default/grub
+    regexp: "^(GRUB_CMDLINE_LINUX_DEFAULT=\".*)\"$"
+    line: '\1 i915.enable_gvt=1"'
+  when: enable_gvt is defined and grub_cmdline_check_enable_gvt.found == 0
+  notify: update grub
+  tags:
+    - pcie_passthrough
+
+#
+# Update UEFI systemd-boot
+#
+- name: check if *_iommu=on is configured in the systemd boot command
+  lineinfile:
+    backup: true
+    path: /etc/kernel/cmdline
+    regexp: '.*{{ architecture }}_iommu=on iommu=pt'
+    state: absent
+  check_mode: true
+  register: kernel_cmdline_check_iommu_on
+  changed_when: false
+  tags:
+    - pcie_passthrough
+
+- name: insert *_iommu=on in systemd boot if missing
+  lineinfile:
+    backrefs: true
+    path: /etc/kernel/cmdline
+    regexp: "^(.*)$"
+    line: '\1 {{ architecture }}_iommu=on iommu=pt'
+  when: kernel_cmdline_check_iommu_on.found == 0
+  notify: proxmox-boot-tool refresh
+  tags:
+    - pcie_passthrough
+
+- name: check if i915.enable_gvt=1 is configured in the systemd boot command
+  lineinfile:
+    backup: true
+    path: /etc/kernel/cmdline
+    regexp: '.* i915.enable_gvt=1'
+    state: absent
+  check_mode: true
+  register: kernel_cmdline_check_enable_gvt
+  changed_when: false
+  tags:
+    - pcie_passthrough
+
+- name: insert i915.enable_gvt=1 in systemd boot if missing
+  lineinfile:
+    backrefs: true
+    path: /etc/kernel/cmdline
+    regexp: "^(.*)$"
+    line: '\1 i915.enable_gvt=1'
+  when: enable_gvt is defined and kernel_cmdline_check_enable_gvt.found == 0
+  notify: proxmox-boot-tool refresh
+  tags:
+    - pcie_passthrough
+
+#
+# Update kernel modules
+#
+- name: copy the /etc/modules template
+  template:
+    src: modules
+    dest: /etc/modules
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - pcie_passthrough

@@ -13,6 +13,23 @@
     - postfix
     - containers
 
+# This sets up PCIe passthrough for VMs on these hosts. The hosts are defined
+# in global_vars/init/proxmox_hosts.yml
+- hosts: pve001
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - role: pcie_passthrough
+      architecture: amd
+
+- hosts: pve005
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - role: pcie_passthrough
+      architecture: intel
+      enable_gvt: true
+
 - hosts: esphome_hosts
   gather_facts: yes
   remote_user: root
