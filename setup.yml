@@ -36,6 +36,12 @@
   roles:
     - esphome
 
+- hosts: grafana_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - grafana
+
 - hosts: lidarr_hosts
   gather_facts: yes
   remote_user: root

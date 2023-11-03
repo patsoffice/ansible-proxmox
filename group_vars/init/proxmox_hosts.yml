@@ -142,3 +142,20 @@ proxmox_hosts:
         traefik_service: esphome
         traefik_hostname: '{{ esphome.traefik_hostname }}'
         service_port: 6052
+      - hostname: '{{ grafana.hostname }}'
+        vmid: '{{ grafana.vmid }}'
+        password: '{{ grafana.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: grafana
+        traefik_service: grafana
+        traefik_hostname: '{{ grafana.traefik_hostname }}'
+        service_port: 3000

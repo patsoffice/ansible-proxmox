@@ -1,0 +1,75 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /usr/share/keyrings/grafana.key
+  tags:
+    - grafana
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main"
+    state: present
+    filename: grafana
+  tags:
+    - grafana
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - apt-transport-https
+      - gnupg
+      - grafana
+      - nfs-common
+      - rdiff-backup
+      - software-properties-common
+  tags:
+    - grafana
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - grafana
+
+- name: Check that /var/lib/grafana/grafana.db exists
+  ansible.builtin.stat:
+    path: /var/lib/grafana/grafana.db
+  register: grafana_db
+  tags:
+    - grafana
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/grafana/ /var/lib/grafana
+  ignore_errors: true
+  when: not grafana_db.stat.exists
+  tags:
+    - grafana
+
+- name: Start and enable the service
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    enabled: true
+    name: grafana-server
+
+- import_tasks: traefik.yml
+  tags:
+    - grafana
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/var/lib/grafana'
+    backup_dest: '/backups/grafana'
+  tags:
+    - grafana
