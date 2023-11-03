@@ -27,6 +27,23 @@ proxmox_hosts:
     zfs_pools:
       - rpool
     containers:
+      - hostname: '{{ netboot_xyz.hostname }}'
+        vmid: '{{ netboot_xyz.vmid }}'
+        password: '{{ netboot_xyz.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: netboot_xyz
+        traefik_service: netboot_xyz
+        traefik_hostname: '{{ netboot_xyz.traefik_hostname }}'
+        service_port: 80
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
         password: '{{ radarr.password }}'

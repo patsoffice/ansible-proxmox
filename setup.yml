@@ -48,6 +48,12 @@
   roles:
     - lidarr
 
+- hosts: netboot_xyz_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - netboot_xyz
+
 - hosts: octoprint_hosts
   gather_facts: yes
   remote_user: root

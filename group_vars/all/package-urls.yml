@@ -1,6 +1,8 @@
 ---
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
+# https://github.com/netbootxyz/netboot.xyz/releases
+netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.73.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.0.3.8127/Radarr.master.5.0.3.8127.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
