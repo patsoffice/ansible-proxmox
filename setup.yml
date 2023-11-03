@@ -78,6 +78,12 @@
   roles:
     - sonarr
 
+- hosts: tautulli_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - tautulli
+
 # This needs to be last so that all containers can have Postfix set up too
 - hosts: postfix_hosts
   gather_facts: yes

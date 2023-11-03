@@ -1,0 +1,18 @@
+[Unit]
+Description=Tautulli Dashboard
+After=network.target
+
+[Service]
+User=tautulli
+
+WorkingDirectory=/opt/tautulli
+ExecStart=python3 /opt/tautulli/Tautulli.py --datadir /config
+Restart=on-failure
+RestartSec=5
+Type=simple
+KillSignal=SIGINT
+TimeoutStopSec=20
+SyslogIdentifier=tautulli
+
+[Install]
+WantedBy=multi-user.target
