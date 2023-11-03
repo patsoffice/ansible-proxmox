@@ -1,0 +1,17 @@
+[Unit]
+Description=Radarr Daemon
+After=syslog.target network.target
+
+[Service]
+User=radarr
+Group=media
+UMask=0002
+
+Type=simple
+ExecStart=/opt/radarr/Radarr -nobrowser -data=/config/
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

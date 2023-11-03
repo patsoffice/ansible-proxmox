@@ -1,0 +1,128 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: radarr
+    uid: '{{ movies_uid }}'
+    packages:
+      - binutils
+      - nfs-common
+      - rdiff-backup
+  tags:
+    - radarr
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: radarr
+        group: media
+      - path: /opt/radarr
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ movies_host }}:{{ movies_path }}'
+        dest: /movies
+        owner: '{{ movies_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ download_host }}:{{ download_path }}'
+        dest: /downloads
+        owner: '{{ download_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - radarr
+
+- name: Get Radarr URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ radarr_master_url | regex_search('v([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - radarr
+
+- name: Check that /opt/radarr/Radarr.Core.dll exists
+  ansible.builtin.stat:
+    path: /opt/radarr/Radarr.Core.dll
+  register: radarr_core_dll
+  tags:
+    - radarr
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "strings /opt/radarr/Radarr.Core.dll | grep Version= | grep Radarr.Common | head -1 | awk -F'Version=' '{ print $2 }' | awk -F, '{print $1}'"
+  register: file_version
+  when: radarr_core_dll.stat.exists
+  tags:
+    - radarr
+
+- name: Set a default Radarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - radarr
+
+- name: Download latest radarr
+  ansible.builtin.get_url:
+    url: '{{ radarr_master_url }}'
+    dest: /opt/radarr.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - radarr
+
+- name: Extract the radarr tarball
+  ansible.builtin.unarchive:
+    src: /opt/radarr.tar.gz
+    dest: /opt/radarr
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != file_version.stdout
+  tags:
+    - radarr
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/radarr.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - radarr
+
+- name: Check that /config/radarr.db exists
+  ansible.builtin.stat:
+    path: /config/radarr.db
+  register: radarr_db
+  tags:
+    - radarr
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/radarr/ /config
+  ignore_errors: true
+  when: not radarr_db.stat.exists
+  tags:
+    - radarr
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'radarr.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - radarr
+
+- import_tasks: traefik.yml
+  tags:
+    - radarr
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/radarr'
+  tags:
+    - radarr

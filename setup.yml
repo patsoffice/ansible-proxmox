@@ -48,6 +48,12 @@
   roles:
     - octoprint
 
+- hosts: radarr_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - radarr
+
 - hosts: sabnzbd_hosts
   gather_facts: yes
   remote_user: root
