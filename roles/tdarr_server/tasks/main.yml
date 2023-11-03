@@ -1,0 +1,162 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: tdarr
+    uid: '{{ transcode_uid }}'
+    packages:
+    - nfs-common
+    - rdiff-backup
+    - unzip
+  tags:
+    - tdarr_server
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: '/opt/tdarr/Tdarr_Server'
+        owner: root
+        group: root
+      - path: '/opt/tdarr/server'
+        owner: root
+        group: root
+      - path: '/opt/tdarr/configs'
+        owner: tdarr
+        group: media
+      - path: '/opt/tdarr/logs'
+        owner: tdarr
+        group: media
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ movies_host }}:{{ movies_path }}'
+        dest: /movies
+        owner: '{{ movies_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ tv_host }}:{{ tv_path }}'
+        dest: /tv
+        owner: '{{ tv_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ transcode_host }}:{{ transcode_cache }}'
+        dest: /opt/tdarr/transcode-cache
+        owner: '{{ transcode_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - tdarr_server
+
+- name: Get tdarr server URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ tdarr_server_package_url | regex_search('versions/([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - tdarr_server
+
+- name: Check that /opt/tdarr/version exists
+  ansible.builtin.stat:
+    path: /opt/tdarr/version
+  register: tdarr_version
+  tags:
+    - tdarr_server
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "cat /opt/tdarr/version"
+  register: file_version
+  when: tdarr_version.stat.exists
+  tags:
+    - tdarr_server
+
+- name: Set a default tdarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - tdarr_server
+
+- name: Download tdarr
+  ansible.builtin.get_url:
+    url: '{{ tdarr_server_package_url }}'
+    dest: /opt/tdarr/Tdarr_Server.zip
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_server
+
+- name: Extract the tdarr server package
+  ansible.builtin.unarchive:
+    src: /opt/tdarr/Tdarr_Server.zip
+    dest: /opt/tdarr/Tdarr_Server
+    remote_src: true
+  no_log: true
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_server
+
+- name: Remove the zip file
+  ansible.builtin.file:
+    path: /opt/tdarr/Tdarr_Server.zip
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_server
+
+- name: update the version
+  ansible.builtin.template:
+    src: 'version'
+    dest: '/opt/tdarr/version'
+    mode: 0644
+    owner: root
+    group: root
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_server
+
+- name: copy the tdarr-server configuration
+  ansible.builtin.copy:
+    src: 'Tdarr_Server_Config.json'
+    dest: '/opt/tdarr/configs'
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - tdarr_server
+
+- name: Check that /opt/tdarr/server/Tdarr/DB2 exists
+  ansible.builtin.stat:
+    path: /opt/tdarr/server/Tdarr/DB2
+  register: tdarr_db2
+  tags:
+    - tdarr_server
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/tdarr/ /opt/tdarr/server/Tdarr
+  ignore_errors: true
+  when: not tdarr_db2.stat.exists
+  tags:
+    - tdarr_server
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'tdarr-server.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - tdarr_server
+
+- import_tasks: traefik.yml
+  tags:
+    - tdarr_server
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/opt/tdarr/server/Tdarr'
+    backup_dest: '/backups/tdarr'
+  tags:
+    - tdarr_server
+
+
+
+

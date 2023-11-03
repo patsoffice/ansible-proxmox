@@ -74,10 +74,27 @@ proxmox_hosts:
           - 'nesting=1'
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
-        config_task: 'sonarr'
-        traefik_service: 'sonarr'
+        config_task: sonarr
+        traefik_service: sonarr
         traefik_hostname: '{{ sonarr.traefik_hostname }}'
         service_port: 8989
+      - hostname: '{{ tdarr_server.hostname }}'
+        vmid: '{{ tdarr_server.vmid }}'
+        password: '{{ tdarr_server.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: tdarr_server
+        traefik_service: tdarr
+        traefik_hostname: '{{ tdarr_server.traefik_hostname }}'
+        service_port: 8265
       - hostname: '{{ tautulli.hostname }}'
         vmid: '{{ tautulli.vmid }}'
         password: '{{ tautulli.password }}'

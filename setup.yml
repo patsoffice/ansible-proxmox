@@ -84,6 +84,12 @@
   roles:
     - tautulli
 
+- hosts: tdarr_server_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - tdarr_server
+
 # This needs to be last so that all containers can have Postfix set up too
 - hosts: postfix_hosts
   gather_facts: yes
