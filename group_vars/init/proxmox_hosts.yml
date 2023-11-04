@@ -78,6 +78,21 @@ proxmox_hosts:
         traefik_service: sonarr
         traefik_hostname: '{{ sonarr.traefik_hostname }}'
         service_port: 8989
+      - hostname: '{{ syslog_ng.hostname }}'
+        vmid: '{{ syslog_ng.vmid }}'
+        container_ip: '{{ syslog_ng.container_ip }}'
+        password: '{{ syslog_ng.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: syslog_ng
       - hostname: '{{ tdarr_node.hostname }}'
         vmid: '{{ tdarr_node.vmid }}'
         password: '{{ tdarr_node.password }}'

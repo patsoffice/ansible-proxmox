@@ -79,6 +79,12 @@
   roles:
     - sonarr
 
+- hosts: syslog_ng_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - syslog_ng
+
 - hosts: tautulli_hosts
   gather_facts: yes
   remote_user: root

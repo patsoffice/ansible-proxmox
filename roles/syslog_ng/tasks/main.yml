@@ -1,0 +1,14 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - syslog-ng
+  tags:
+    - syslog_ng
+
+- name: Start and enable the service
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: true
+    enabled: true
+    name: syslog-ng
