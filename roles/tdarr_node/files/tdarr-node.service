@@ -1,0 +1,17 @@
+[Unit]
+Description=Tdarr Node Daemon
+After=network.target
+
+[Service]
+User=tdarr
+Group=media
+
+Type=simple
+WorkingDirectory=/opt/tdarr/Tdarr_Node
+ExecStart=/opt/tdarr/Tdarr_Node/Tdarr_Node
+TimeoutStopSec=20
+KillMode=mixed
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

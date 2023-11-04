@@ -12,4 +12,5 @@ sonarr_master_url: https://download.sonarr.tv/v3/main/3.0.10.1567/Sonarr.main.3.
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.2.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
+tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Server.zip

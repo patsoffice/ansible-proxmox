@@ -84,6 +84,12 @@
   roles:
     - tautulli
 
+- hosts: tdarr_node_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - tdarr_node
+
 - hosts: tdarr_server_hosts
   gather_facts: yes
   remote_user: root

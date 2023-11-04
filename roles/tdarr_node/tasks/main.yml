@@ -1,0 +1,130 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: media
+    gid: '{{ media_gid }}'
+    username: tdarr
+    uid: '{{ transcode_uid }}'
+    packages:
+      - handbrake-cli
+      - intel-opencl-icd
+      - nfs-common
+      - nfs-common
+      - ocl-icd-libopencl1
+      - rdiff-backup
+      - unzip
+      - va-driver-all
+  tags:
+    - tdarr_node
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: '/opt/tdarr/Tdarr_Node'
+        owner: root
+        group: root
+      - path: '/opt/tdarr/configs'
+        owner: tdarr
+        group: media
+      - path: '/opt/tdarr/logs'
+        owner: tdarr
+        group: media
+    mountpoints:
+      - src: '{{ movies_host }}:{{ movies_path }}'
+        dest: /movies
+        owner: '{{ movies_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ tv_host }}:{{ tv_path }}'
+        dest: /tv
+        owner: '{{ tv_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ transcode_host }}:{{ transcode_cache }}'
+        dest: /opt/tdarr/transcode-cache
+        owner: '{{ transcode_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - tdarr_node
+
+- name: Get tdarr server URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ tdarr_node_package_url | regex_search('versions/([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - tdarr_node
+
+- name: Check that /opt/tdarr/version exists
+  ansible.builtin.stat:
+    path: /opt/tdarr/version
+  register: tdarr_version
+  tags:
+    - tdarr_node
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "cat /opt/tdarr/version"
+  register: file_version
+  when: tdarr_version.stat.exists
+  tags:
+    - tdarr_node
+
+- name: Set a default tdarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - tdarr_node
+
+- name: Download tdarr
+  ansible.builtin.get_url:
+    url: '{{ tdarr_node_package_url }}'
+    dest: /opt/tdarr/Tdarr_Node.zip
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_node
+
+- name: Extract the tdarr updater
+  ansible.builtin.unarchive:
+    src: /opt/tdarr/Tdarr_Node.zip
+    dest: /opt/tdarr/Tdarr_Node
+    remote_src: true
+  no_log: true
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_node
+
+- name: Remove the zip file
+  ansible.builtin.file:
+    path: /opt/tdarr/Tdarr_Node.zip
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_node
+
+- name: update the version
+  template:
+    src: 'version'
+    dest: '/opt/tdarr/version'
+    mode: 0644
+    owner: root
+    group: root
+  when: web_version != file_version.stdout
+  tags:
+    - tdarr_node
+
+- name: copy the tdarr-node configuration
+  template:
+    src: 'Tdarr_Node_Config.json'
+    dest: '/opt/tdarr/configs'
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - tdarr_node
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'tdarr-node.service'
+    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - tdarr_node
+
