@@ -1,0 +1,10 @@
+---
+
+- ansible.builtin.include_tasks: generic_redirect.yml
+  args:
+    apply:
+      tags:
+        - generic_redirects
+  loop: '{{ vacuum_redirects }}'
+  tags:
+    - generic_redirects

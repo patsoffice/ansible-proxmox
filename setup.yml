@@ -2,6 +2,7 @@
   gather_facts: no
   roles:
     - host_manager
+    - generic_redirects
 
 - hosts: proxmox_hosts
   gather_facts: yes

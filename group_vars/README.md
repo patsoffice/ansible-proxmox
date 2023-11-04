@@ -51,6 +51,20 @@ traefik_user: remote_user
 traefik_config_path: /config/traefik/config.d
 ```
 
+## all/vacuum_redirects.yml
+
+The `vacuum_redirects.yml` variables have information so that Traefik is used as a reverse proxy for vacuums running Valetudo. The following keys are required:
+
+```yaml
+vacuum_redirects:
+  - traefik_service: 'downstairs_vacuum'
+    traefik_host_rule: 'Host(`downstairs-vacuum.domain.com`)'
+    traefik_lb_url: 'http://10.13.5.1/'
+  - traefik_service: 'upstairs_vacuum'
+    traefik_host_rule: 'Host(`upstairs-vacuum.domain.com`)'
+    traefik_lb_url: 'http://10.13.5.2/'
+```
+
 ## init/proxmox_hosts.yml
 
 The `proxmox_hosts.yml` variables have all the information we need to configure Proxmox-VE hosts. This includes setting up the hosts and creating containers on them. For now, containers will be statically defined but they can likely migrate from one host to another
