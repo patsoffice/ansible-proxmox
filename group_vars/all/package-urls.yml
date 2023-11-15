@@ -1,4 +1,6 @@
 ---
+# From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
+home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases

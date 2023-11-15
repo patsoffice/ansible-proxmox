@@ -27,6 +27,16 @@ The `cron.yml` variables have default information needed for correctly setting c
 cron_mailto: user@domain.com
 ```
 
+## all/letsencrypt_duckdns.yml
+
+The `letsencrypt_duckdns.yml` variables have information to set up LetsEncrypt using DuckDNS as a DNS provider. The following keys are required:
+
+```yaml
+letsencrypt_duckdns_email: foo@domain.com
+letsencrypt_duckdns_token: '8675309-4242-4460-a210-93add45be0c0'
+letsencrypt_duckdns_url: '*.domain.duckdns.org'
+```
+
 ## all/networking.yml
 
 The `networking.yml` variables have container networking information. The following keys are required:

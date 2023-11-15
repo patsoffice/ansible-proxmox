@@ -1,0 +1,207 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: home_assistant
+    uid: 1000
+    shell: '/bin/bash'
+    packages:
+      - git
+      - bluez
+      - libffi-dev
+      - libssl-dev
+      - libjpeg-dev
+      - zlib1g-dev
+      - autoconf
+      - build-essential
+      - libopenjp2-7
+      - libturbojpeg0-dev
+      - ffmpeg
+      - liblapack3
+      - liblapack-dev
+      - dbus-broker
+      - libpcap-dev
+      - libmariadb-dev-compat
+      - libatlas-base-dev
+      - nfs-common
+      - python3
+      - python3-dev
+      - python3-pip
+      - python3-venv
+      - rdiff-backup
+      - make
+      - libreadline-dev
+      - libsqlite3-dev
+      - libncurses5-dev
+      - libncursesw5-dev
+      - xz-utils
+      - tk-dev
+      - llvm
+      - libbz2-dev
+      - libxml2-dev
+      - libxmlsec1-dev
+      - liblzma-dev
+  tags:
+    - home_assistant
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: home_assistant
+        group: home_assistant
+      - path: /opt/home_assistant
+        owner: home_assistant
+        group: home_assistant
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - home_assistant
+
+- name: Checkout pyenv
+  ansible.builtin.git:
+    repo: https://github.com/pyenv/pyenv.git
+    dest: /home/home_assistant/.pyenv
+  become: true
+  become_user: home_assistant
+  tags:
+    - home_assistant
+
+- name: copy the file used to setup pyenv
+  ansible.builtin.copy:
+    src: bashrc-pyenv
+    dest: /home/home_assistant/.bashrc-pyenv
+    mode: 0644
+    owner: home_assistant
+    group: home_assistant
+  tags:
+    - home_assistant
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv global'
+    executable: /bin/bash
+  become: true
+  become_user: home_assistant
+  register: pyenv_global_version
+  changed_when: false
+  tags:
+    - home_assistant
+
+- name: 'Build python {{ home_assistant_pyenv_version }}'
+  ansible.builtin.shell:
+    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv install {{ home_assistant_pyenv_version }} && pyenv global {{ home_assistant_pyenv_version }}'
+    executable: /bin/bash
+  become: true
+  become_user: home_assistant
+  when: home_assistant_pyenv_version != pyenv_global_version.stdout
+  tags:
+    - home_assistant
+
+- name: Ensure the virtual environment is created
+  ansible.builtin.shell:
+    cmd: /home/home_assistant/.pyenv/shims/python3 -m venv venv
+    chdir: /opt/home_assistant
+  become: true
+  become_user: home_assistant
+  tags:
+    - home_assistant
+
+- name: Install Home Assistant and its dependencies into the venv
+  ansible.builtin.pip:
+    name:
+      - certbot_dns_duckdns
+      - homeassistant
+      - mysqlclient
+      - psycopg2-binary
+    state: latest
+    virtualenv: /opt/home_assistant/venv
+    virtualenv_site_packages: true
+  become: true
+  become_user: home_assistant
+  register: pip_install
+  tags:
+    - home_assistant
+
+- name: Check if the cert exists
+  ansible.builtin.stat:
+    path: /config/letsencrypt/live/chezlawrence.duckdns.org/fullchain.pem
+  become: true
+  become_user: home_assistant
+  register: duckdns_cert
+  tags:
+    - home_assistant
+
+- name: Get duckdns wildcard cert
+  ansible.builtin.command:
+    argv:
+      - /opt/home_assistant/venv/bin/certbot
+      - certonly
+      - --non-interactive
+      - --agree-tos
+      - '--email {{ letsencrypt_duckdns_email }}'
+      - --preferred-challenges
+      - dns
+      - --authenticator
+      - dns-duckdns
+      - --dns-duckdns-token
+      - '{{ letsencrypt_duckdns_token }}'
+      - --dns-duckdns-propagation-seconds
+      - 60
+      - -d
+      - '{{ letsencrypt_duckdns_url }}'
+      - --config-dir
+      - /config/letsencrypt
+      - --work-dir
+      - /config/letsencrypt
+      - --logs-dir
+      - /config/letsencrypt/logs
+  become: true
+  become_user: home_assistant
+  ignore_errors: true
+  when: not duckdns_cert.stat.exists
+  tags:
+    - home_assistant
+
+- name: Creates a backup cron file under /etc/cron.d
+  ansible.builtin.cron:
+    name: certbot
+    minute: '0'
+    hour: '0,12'
+    user: home_assistant
+    job: '/opt/home_assistant/venv/bin/certbot renew --config-dir /config/letsencrypt --work-dir /config/letsencrypt --logs-dir /config/letsencrypt/logs'
+    cron_file: certbot
+  tags:
+    - home_assistant
+
+- name: Check that /config/home-assistant_v2.db exists
+  ansible.builtin.stat:
+    path: /config/home-assistant_v2.db
+  register: home_assistant_v2_db
+  tags:
+    - home_assistant
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/home_assistant/ /config
+  ignore_errors: true
+  when: not home_assistant_v2_db.stat.exists
+  tags:
+    - home_assistant
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'home_assistant.service'
+    state: '{{ pip_install.changed | ternary("restarted", "started") }}'
+  tags:
+    - home_assistant
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/home_assistant'
+  tags:
+    - home_assistant

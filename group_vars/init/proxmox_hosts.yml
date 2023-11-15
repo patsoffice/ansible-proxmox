@@ -146,6 +146,20 @@ proxmox_hosts:
         traefik_service: tautulli
         traefik_hostname: '{{ tautulli.traefik_hostname }}'
         service_port: 8181
+      - hostname: '{{ home_assistant.hostname }}'
+        vmid: '{{ home_assistant.vmid }}'
+        password: '{{ home_assistant.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 2
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: home_assistant
   pve006:
     api_host: '{{ pve006.api_host }}'
     api_user: '{{ pve006.api_user }}'

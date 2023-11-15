@@ -1,0 +1,15 @@
+[Unit]
+Description=Home Assistant
+After=network-online.target
+
+[Service]
+User=home_assistant
+
+Type=simple
+WorkingDirectory=/config
+ExecStart=/opt/home_assistant/venv/bin/hass -c "/config"
+Restart=always
+RestartForceExitStatus=100
+
+[Install]
+WantedBy=multi-user.target
