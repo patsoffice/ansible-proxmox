@@ -17,5 +17,5 @@
     setype: container_file_t
     selevel: s0
   delegate_to: '{{ traefik_host }}'
-  remote_user: '{{ traefil_user }}'
+  remote_user: '{{ traefik_user }}'
   become: true

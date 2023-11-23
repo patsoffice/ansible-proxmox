@@ -1,0 +1,115 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: dnscrypt-proxy
+    groupname: dnscrypt-proxy
+    uid: '{{ dnscrypt_proxy_uid }}'
+    gid: '{{ dnscrypt_proxy_gid }}'
+  tags:
+    - dns
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt/dnscrypt-proxy
+        owner: '{{ dnscrypt_proxy_uid }}'
+        group: '{{ dnscrypt_proxy_gid }}'
+      - path: /config
+      - path: /config/dnscrypt-proxy
+        owner: '{{ dnscrypt_proxy_uid }}'
+        group: '{{ dnscrypt_proxy_gid }}'
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Get dnscrypt-proxy URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ dnscrypt_proxy_package_url | regex_search('download/([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Check that /opt/dnscrypt-proxy/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/dnscrypt-proxy/version.txt
+  register: version_txt
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Get the installed version
+  command: cat /opt/dnscrypt-proxy/version.txt
+  register: version_txt_cmd
+  when: version_txt.stat.exists
+  changed_when: false
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Set the dnscrypt-proxy file version
+  ansible.builtin.set_fact:
+    installed_version: '{{ version_txt_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Download latest dnscrypt-proxy
+  ansible.builtin.get_url:
+    url: '{{ dnscrypt_proxy_package_url }}'
+    dest: /opt/dnscrypt-proxy.tar.gz
+  when: web_version != installed_version
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Extract the dnscrypt-proxy tarball
+  ansible.builtin.unarchive:
+    src: /opt/dnscrypt-proxy.tar.gz
+    dest: /opt/dnscrypt-proxy
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != installed_version
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/dnscrypt-proxy.tar.gz
+    state: absent
+  when: web_version != installed_version
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: update the version.txt
+  template:
+    src: 'version.txt'
+    dest: '/opt/dnscrypt-proxy/version.txt'
+    mode: 0644
+    owner: root
+    group: root
+  when: web_version != installed_version
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- name: copy the dnscrypt-proxy config file
+  ansible.builtin.copy:
+    src: dnscrypt-proxy.toml
+    dest: /config/dnscrypt-proxy/dnscrypt-proxy.toml
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - dns
+    - dnscrypt_proxy
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'dnscrypt-proxy.service'
+    state: '{{ (web_version != installed_version) | ternary("restarted", "started") }}'
+  tags:
+    - dns
+    - dnscrypt_proxy

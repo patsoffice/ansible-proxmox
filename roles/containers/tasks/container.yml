@@ -107,5 +107,6 @@
     service_port: '{{ item.service_port | default("") }}'
     additional_vars: '{{ item.additional_vars | default({}) }}'
   when: item.config_task is defined
+  changed_when: false
   tags:
     - containers

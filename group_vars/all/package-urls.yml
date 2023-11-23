@@ -1,10 +1,16 @@
 ---
+# https://github.com/DNSCrypt/dnscrypt-proxy/releases
+dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.1.5/dnscrypt-proxy-linux_x86_64-2.1.5.tar.gz
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.73.tar.gz
+# https://github.com/pi-hole/pi-hole/releases
+pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.2.tar.gz
+# https://www.openssl.org/source/
+openssl_src_url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.0.3.8127/Radarr.master.5.0.3.8127.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
@@ -16,3 +22,5 @@ tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Server.zip
+# https://github.com/NLnetLabs/unbound/tags
+unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.0.tar.gz

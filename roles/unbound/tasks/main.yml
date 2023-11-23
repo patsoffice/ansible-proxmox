@@ -1,0 +1,244 @@
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: unbound
+    groupname: unbound
+    uid: '{{ unbound_uid }}'
+    gid: '{{ unbound_gid }}'
+    packages:
+      - bison
+      - bsdmainutils
+      - ca-certificates
+      - coreutils
+      - expat
+      - findutils
+      - flex
+      - gcc
+      - grep
+      - ldnsutils
+      - libc-dev
+      - libevent-2.1-7
+      - libevent-dev
+      - libexpat1
+      - libexpat1-dev
+      - libnghttp2-dev
+      - libprotobuf-c-dev
+      - libssl3
+      - make
+      - protobuf-c-compiler
+      - software-properties-common
+      - util-linux
+  tags:
+    - dns
+    - unbound
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt/unbound/etc/unbound/dev
+        owner: root
+        group: root
+      - path: /opt/unbound/etc/unbound/var
+        owner: '{{ unbound_uid }}'
+        group: '{{ unbound_gid }}'
+        mode: 700
+      - path: /opt/unbound/etc/unbound/conf.d
+        owner: '{{ unbound_uid }}'
+        group: '{{ unbound_gid }}'
+  tags:
+    - dns
+    - unbound
+
+- name: Get OpenSSL URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ openssl_src_url | regex_search('/openssl-([\\d.]+).tar.gz$', '\\1') | first }}"
+  tags:
+    - dns
+    - unbound
+
+- name: Check that /opt/openssl/include/openssl/opensslv.h exists
+  ansible.builtin.stat:
+    path: /opt/openssl/include/openssl/opensslv.h
+  register: opensslv_h
+  tags:
+    - dns
+    - unbound
+
+- name: Get the installed OpenSSL version
+  ansible.builtin.shell:
+    cmd: "grep OPENSSL_VERSION_STR /opt/openssl/include/openssl/opensslv.h | awk -F\\\" '{print $2}'"
+  register: file_version
+  when: opensslv_h.stat.exists
+  changed_when: false
+  tags:
+    - dns
+    - unbound
+
+- name: Set a default OpenSSL file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - dns
+    - unbound
+
+- name: Download latest OpenSSL
+  ansible.builtin.get_url:
+    url: '{{ openssl_src_url }}'
+    dest: /tmp/openssl.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Extract the OpenSSL tarball
+  ansible.builtin.unarchive:
+    src: /tmp/openssl.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /tmp/openssl.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Build OpenSSL
+  ansible.builtin.shell:
+    cmd: ./config --prefix=/opt/openssl --openssldir=/opt/openssl no-weak-ssl-ciphers no-ssl3 no-shared enable-ec_nistp_64_gcc_128 -DOPENSSL_NO_HEARTBEATS -fstack-protector-strong && make depend && make && make install_sw
+    chdir: '/tmp/openssl-{{ web_version }}'
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Remove the OpenSSL build directory
+  ansible.builtin.file:
+    path: '/tmp/openssl-{{ web_version }}'
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Get Unbound URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ unbound_src_url | regex_search('/release-([\\d.]+).tar.gz$', '\\1') | first }}"
+  tags:
+    - dns
+    - unbound
+
+- name: Check that /opt/unbound/lib/pkgconfig/libunbound.pc exists
+  ansible.builtin.stat:
+    path: /opt/unbound/lib/pkgconfig/libunbound.pc
+  register: libunbound_pc
+  tags:
+    - dns
+    - unbound
+
+- name: Get the installed Unbound version
+  ansible.builtin.shell:
+    cmd: "grep Version: /opt/unbound/lib/pkgconfig/libunbound.pc | awk -F': ' '{print $2}'"
+  register: file_version
+  when: libunbound_pc.stat.exists
+  changed_when: false
+  tags:
+    - dns
+    - unbound
+
+- name: Set a default Unbound file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - dns
+    - unbound
+
+- name: Download latest Unbound
+  ansible.builtin.get_url:
+    url: '{{ unbound_src_url }}'
+    dest: /tmp/unbound.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Extract the Unbound tarball
+  ansible.builtin.unarchive:
+    src: /tmp/unbound.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Remove the Unbound tarball
+  ansible.builtin.file:
+    path: /tmp/unbound.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Build Unbound
+  ansible.builtin.shell:
+    cmd: ./configure --prefix=/opt/unbound --with-pthreads --with-username=unbound --with-ssl=/opt/openssl --with-libevent --with-libnghttp2 --enable-dnstap --enable-tfo-server --enable-tfo-client --enable-event-api --enable-subnet && make install
+    chdir: '/tmp/unbound-release-{{ web_version }}'
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: Remove the Unbound build directory
+  ansible.builtin.file:
+    path: '/tmp/unbound-release-{{ web_version }}'
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - unbound
+
+- name: copy the unbound config file
+  ansible.builtin.copy:
+    src: unbound.conf
+    dest: /opt/unbound/etc/unbound
+    mode: 0644
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  tags:
+    - dns
+    - unbound
+
+- name: copy the zone files
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/opt/unbound/etc/unbound/conf.d/{{ item }}'
+    mode: 0644
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  loop:
+    - local.conf
+    - chezlawrence.com.conf
+    - int.chezlawrence.com.conf
+  register: zone_files
+  tags:
+    - dns
+    - unbound
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'unbound.service'
+    state: '{{ (web_version != file_version.stdout or zone_files.changed) | ternary("restarted", "started") }}'
+  tags:
+    - dns
+    - unbound

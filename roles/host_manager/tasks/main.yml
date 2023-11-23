@@ -27,5 +27,6 @@
     proxmox_containers: '{{ proxmox_hosts[item].containers if proxmox_hosts[item].containers is defined }}'
   loop: '{{ host_keys }}'
   no_log: true
+  changed_when: false
   tags:
     - host_manager

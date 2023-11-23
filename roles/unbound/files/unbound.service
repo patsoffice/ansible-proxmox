@@ -1,0 +1,12 @@
+[Unit]
+Description = Recursive DNS server
+
+[Service]
+ExecStartPre = /opt/unbound/sbin/unbound-anchor -a /opt/unbound/etc/unbound/var/root.key -v
+ExecStart = /opt/unbound/sbin/unbound -d -c /opt/unbound/etc/unbound/unbound.conf
+ExecReload = /bin/kill -HUP $MAINPID
+Restart = always
+RestartSec = 360
+
+[Install]
+WantedBy = multi-user.target

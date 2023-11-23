@@ -1,0 +1,22 @@
+---
+- import_tasks: ubuntu_setup.yml
+  tags:
+    - dns
+
+- name: Run the dnscrypt-proxy role
+  ansible.builtin.include_role:
+    name: dnscrypt_proxy
+  tags:
+    - dns
+
+- name: Run the unbound role
+  ansible.builtin.include_role:
+    name: unbound
+  tags:
+    - dns
+
+- name: Run the pi-hole role
+  ansible.builtin.include_role:
+    name: pi_hole
+  tags:
+    - dns

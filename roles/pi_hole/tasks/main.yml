@@ -1,0 +1,118 @@
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: pihole
+    groupname: pihole
+    uid: '{{ pihole_uid }}'
+    gid: '{{ pihole_gid }}'
+    shell: /usr/sbin/nologin
+  tags:
+    - dns
+    - pihole
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /etc/pihole
+        owner: pihole
+        group: pihole
+        mode: '0775'
+  tags:
+    - dns
+    - pihole
+
+- name: Get pi-hole URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ pihole_src_url | regex_search('/v([\\d.]+).tar.gz$', '\\1') | first }}"
+  tags:
+    - dns
+    - pihole
+
+- name: Check that /opt/pihole/version.sh exists
+  ansible.builtin.stat:
+    path: /opt/pihole/version.sh
+  register: version_sh
+  tags:
+    - dns
+    - pihole
+
+- name: Get the installed pi-hole version
+  ansible.builtin.shell:
+    cmd: "/opt/pihole/version.sh -p | awk -F'version is ' '{print $2}' | awk '{print $1}' | sed 's/v//'"
+  register: file_version
+  when: version_sh.stat.exists
+  changed_when: false
+  tags:
+    - dns
+    - pihole
+
+- name: copy the setupVars config
+  template:
+    src: setupVars.conf
+    dest: /etc/pihole/setupVars.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: setup_vars
+  tags:
+    - dns
+    - pihole
+
+- name: Set a default pi-hole file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: (file_version.stdout is undefined) or setup_vars.changed
+  tags:
+    - dns
+    - pihole
+
+- name: Download latest pi-hole
+  ansible.builtin.get_url:
+    url: '{{ pihole_src_url }}'
+    dest: /tmp/pi-hole.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - pihole
+
+- name: Extract the pi-hole tarball
+  ansible.builtin.unarchive:
+    src: /tmp/pi-hole.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - pihole
+
+- name: Remove the pi-hole tarball
+  ansible.builtin.file:
+    path: /tmp/unbound.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - pihole
+
+- name: Build pi-hole
+  ansible.builtin.shell:
+    cmd: ./basic-install.sh --unattended
+    chdir: '/tmp/pi-hole-{{ web_version }}/automated install'
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - pihole
+
+- name: Remove the pi-hole build directory
+  ansible.builtin.file:
+    path: '/tmp/pi-hole-{{ web_version }}'
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - dns
+    - pihole
+
+- import_tasks: traefik.yml
+  tags:
+    - dns
+    - pihole

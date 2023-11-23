@@ -27,6 +27,24 @@ proxmox_hosts:
     zfs_pools:
       - rpool
     containers:
+      - hostname: '{{ dns0.hostname }}'
+        vmid: '{{ dns0.vmid }}'
+        container_ip: '{{ dns0.container_ip }}'
+        password: '{{ dns0.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: dns
+        traefik_service: 'dns0'
+        traefik_hostname: '{{ dns0.traefik_hostname }}'
+        service_port: 80
       - hostname: '{{ netboot_xyz.hostname }}'
         vmid: '{{ netboot_xyz.vmid }}'
         password: '{{ netboot_xyz.password }}'
@@ -167,6 +185,24 @@ proxmox_hosts:
     zfs_pools:
       - rpool
     containers:
+      - hostname: '{{ dns1.hostname }}'
+        vmid: '{{ dns1.vmid }}'
+        container_ip: '{{ dns1.container_ip }}'
+        password: '{{ dns1.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: dns
+        traefik_service: 'dns1'
+        traefik_hostname: '{{ dns1.traefik_hostname }}'
+        service_port: 80
       - hostname: '{{ octoprint.hostname }}'
         vmid: '{{ octoprint.vmid }}'
         password: '{{ octoprint.password }}'

@@ -1,0 +1,14 @@
+[Unit]
+Description=DNSCrypt-proxy
+After=network.target
+
+[Service]
+User=dnscrypt-proxy
+
+ExecStart=/opt/dnscrypt-proxy/dnscrypt-proxy --config /config/dnscrypt-proxy/dnscrypt-proxy.toml
+Environment="LC_ALL=C.UTF-8"
+Environment="LANG=C.UTF-8"
+Type=exec
+
+[Install]
+WantedBy=multi-user.target

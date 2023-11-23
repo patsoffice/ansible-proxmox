@@ -27,6 +27,23 @@ The `cron.yml` variables have default information needed for correctly setting c
 cron_mailto: user@domain.com
 ```
 
+## all/dns.yml
+
+The `dns.yml` variables have default information needed for correctly setting up dnscrypt-proxy, unbound and pi-hole on dns hosts. The following keys are required:
+
+```yaml
+dnscrypt_proxy_gid: '5000'
+dnscrypt_proxy_uid: '5000'
+
+pihole_gid: '5002'
+pihole_uid: '5002'
+# The output of echo -n P@ssw0rd | sha256sum | awk '{printf "%s",$1 }' | sha256sum
+pihole_password: 0e69e6a4038df88d4c62c837edd7e04a95ea6368bca9d469e00ad766a2266770
+
+unbound_gid: '5001'
+unbound_uid: '5001'
+```
+
 ## all/letsencrypt_duckdns.yml
 
 The `letsencrypt_duckdns.yml` variables have information to set up LetsEncrypt using DuckDNS as a DNS provider. The following keys are required:
