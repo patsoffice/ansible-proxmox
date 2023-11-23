@@ -6,13 +6,13 @@ home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
-netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.73.tar.gz
+netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.74.tar.gz
 # https://github.com/pi-hole/pi-hole/releases
 pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.2.tar.gz
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
 # https://github.com/Radarr/Radarr/releases
-radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.0.3.8127/Radarr.master.5.0.3.8127.linux-core-x64.tar.gz
+radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.1.3.8246/Radarr.master.5.1.3.8246.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.1.0/SABnzbd-4.1.0-src.tar.gz
 # https://github.com/Sonarr/Sonarr/tags
@@ -20,7 +20,7 @@ sonarr_master_url: https://download.sonarr.tv/v3/main/3.0.10.1567/Sonarr.main.3.
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.2.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
-tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Node.zip
-tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.14.02/linux_x64/Tdarr_Server.zip
+tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.15.01/linux_x64/Tdarr_Node.zip
+tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.15.01/linux_x64/Tdarr_Server.zip
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.0.tar.gz

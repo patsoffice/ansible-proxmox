@@ -104,7 +104,7 @@
 
 - name: update the version
   ansible.builtin.template:
-    src: 'version'
+    src: 'version.txt'
     dest: '/opt/tdarr/version'
     mode: 0644
     owner: root

@@ -102,7 +102,7 @@
 
 - name: update the version
   template:
-    src: 'version'
+    src: version.txt
     dest: '/opt/tdarr/version'
     mode: 0644
     owner: root
