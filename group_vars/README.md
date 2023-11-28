@@ -11,6 +11,19 @@ backup_owner: root
 backup_group: root
 ```
 
+## all/caddy.yml
+
+The `caddy.yml` variables have default information needed to generate a Caddyfile and install the executable. The following keys are required:
+
+```yaml
+caddy_domain: domain.com
+caddy_domain_wildcard: "*.domain.com"
+caddy_dns_cloudflare_email: user@domain.com
+caddy_dns_cloudflare_token: aslfkalsdflkasdljfljsadljksdjfalskdf
+caddy_uid: 1999
+caddy_gid: 1999
+```
+
 ## all/containers.yml
 
 The `containers.yml` variables have default information needed for any containers defined. The following keys are required:

@@ -4,6 +4,7 @@
     name: '{{ groupname }}'
     gid: '{{ gid }}'
     state: present
+    system: '{{ system | default("true") | bool }}'
   when: groupname is defined and gid is defined
 
 - name: Create the user
@@ -14,6 +15,7 @@
     groups: '{{ groupnames | default(omit) }}'
     shell: '{{ shell | default("/usr/sbin/nologin") }}'
     append: '{{ groupnames is defined | bool }}'
+    system: '{{ system | default("true") | bool }}'
   when: username is defined
 
 - name: Set timezone to America/Los_Angeles

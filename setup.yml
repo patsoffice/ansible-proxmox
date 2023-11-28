@@ -31,6 +31,12 @@
       architecture: intel
       enable_gvt: true
 
+- hosts: caddy_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - caddy
+
 - hosts: dns_hosts
   gather_facts: yes
   remote_user: root

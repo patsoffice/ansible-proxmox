@@ -1,0 +1,6 @@
+[Path]
+Unit=caddy-restarter.service
+PathChanged=/config/services.d
+
+[Install]
+WantedBy=multi-user.target

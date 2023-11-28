@@ -1,0 +1,180 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://dl.cloudsmith.io/public/caddy/xcaddy/gpg.key
+    dest: /usr/share/keyrings/xcaddy.key
+  tags:
+    - caddy
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/xcaddy.key] https://dl.cloudsmith.io/public/caddy/xcaddy/deb/debian any-version main"
+    state: present
+    filename: caddy
+  tags:
+    - caddy
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: caddy
+    groupname: caddy
+    uid: '{{ caddy_uid }}'
+    gid: '{{ caddy_gid }}'
+    packages:
+      - apt-transport-https
+      - gnupg
+      - jq
+      - nfs-common
+      - rdiff-backup
+      - software-properties-common
+      - xcaddy
+  tags:
+    - caddy
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt
+        owner: root
+        group: root
+      - path: /config
+        owner: caddy
+        group: caddy
+        mode: '0700'
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - caddy
+
+- name: Get Go URL version
+  ansible.builtin.set_fact:
+    go_web_version: "{{ caddy_go_url | regex_search('/go([\\d.]+).linux-amd64.tar.gz', '\\1') | first }}"
+  tags:
+    - caddy
+
+- name: Check that /opt/go/bin/go exists
+  ansible.builtin.stat:
+    path: /opt/go/bin/go
+  register: go_bin
+  tags:
+    - caddy
+
+- name: Get the installed go version
+  ansible.builtin.shell:
+    cmd: "/opt/go/bin/go version | awk -F'version ' '{print $2}' | awk '{print $1}' | sed 's/go//'"
+  register: go_file_version
+  when: go_bin.stat.exists
+  changed_when: false
+  tags:
+    - caddy
+
+- name: Set a default go file version
+  ansible.builtin.set_fact:
+    go_file_version:
+      stdout: 'missing'
+  when: go_file_version.stdout is undefined
+  tags:
+    - caddy
+
+- name: Download go
+  ansible.builtin.get_url:
+    url: '{{ caddy_go_url }}'
+    dest: /tmp/go.tar.gz
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - caddy
+
+- name: Extract the go tarball
+  ansible.builtin.unarchive:
+    src: /tmp/go.tar.gz
+    dest: /opt
+    remote_src: true
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - caddy
+
+- name: Remove the go tarball
+  ansible.builtin.file:
+    path: /opt/go.tar.gz
+    state: absent
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - caddy
+
+- name: Check that /opt/caddy exists
+  ansible.builtin.stat:
+    path: /opt/caddy
+  register: caddy_file
+  tags:
+    - caddy
+
+- name: Get the installed caddy version
+  ansible.builtin.shell:
+    cmd: "/opt/caddy version | awk '{print $1}'"
+  register: caddy_file_version
+  when: caddy_file.stat.exists
+  changed_when: false
+  tags:
+    - caddy
+
+- name: Set a default caddy file version
+  ansible.builtin.set_fact:
+    caddy_file_version:
+      stdout: 'missing'
+  when: caddy_file_version.stdout is undefined
+  tags:
+    - caddy
+
+- name: Build caddy
+  ansible.builtin.shell:
+    cmd: 'XCADDY_WHICH_GO=/opt/go/bin/go xcaddy build {{ caddy_version }} --with {{ caddy_dns_cloudflare }} --with {{ caddy_dns_route53 }} --with {{ caddy_dns_duckdns }} --output /opt/caddy'
+  when: caddy_version != caddy_file_version.stdout
+  tags:
+    - caddy
+
+- name: Check that /config/Caddyfile exists
+  ansible.builtin.stat:
+    path: /config/Caddyfile
+  register: caddyfile
+  tags:
+    - caddy
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/caddy/ /config
+  ignore_errors: true
+  when: not caddyfile.stat.exists
+  tags:
+    - caddy
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'caddy.service'
+    state: '{{ (caddy_version != caddy_file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - caddy
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'caddy-restarter.service'
+    state: "started"
+  tags:
+    - caddy
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'caddy-restarter.path'
+    state: "started"
+  tags:
+    - caddy
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/caddy'
+  tags:
+    - caddy

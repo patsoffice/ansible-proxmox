@@ -1,0 +1,15 @@
+{
+	email {{ caddy_dns_cloudflare_email }}
+	storage file_system {
+		root /config
+	}
+}
+
+{{ caddy_domain_wildcard }}, {{ caddy_domain }} {
+	tls {
+		dns cloudflare {{ caddy_dns_cloudflare_token }}
+		resolvers 1.1.1.1
+	}
+
+	import services.d/*
+}
