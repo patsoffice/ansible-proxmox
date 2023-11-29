@@ -65,6 +65,7 @@
     cmd: "cat /opt/tdarr/version"
   register: file_version
   when: tdarr_version.stat.exists
+  changed_when: false
   tags:
     - tdarr_server
 
@@ -145,7 +146,7 @@
   tags:
     - tdarr_server
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - tdarr_server
 

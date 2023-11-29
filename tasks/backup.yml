@@ -27,4 +27,4 @@
   ansible.builtin.add_host:
     name: '{{ inventory_hostname }}'
     groups: 'postfix_hosts'
-    changed_when: false
+  changed_when: false

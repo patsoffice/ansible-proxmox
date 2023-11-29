@@ -49,6 +49,7 @@
     cmd: "/usr/bin/grep ^PLEXPY_RELEASE_VERSION /opt/tautulli//plexpy/version.py | awk -F\\\" '{print $2}'"
   register: file_version
   when: tautulli_version.stat.exists
+  changed_when: false
   tags:
     - tautulli
 
@@ -125,7 +126,7 @@
   tags:
     - tautulli
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - tautulli
 

@@ -102,9 +102,10 @@
     name: '{{ container_ip }}'
     groups: '{{ item.config_task }}_hosts'
     container_hostname: '{{ item.hostname }}'
-    traefik_hostname: '{{ item.traefik_hostname | default("") }}'
-    traefik_service: '{{ item.traefik_service | default("") }}'
-    service_port: '{{ item.service_port | default("") }}'
+    reverse_proxy_hostname: '{{ item.reverse_proxy_hostname | default(omit) }}'
+    reverse_proxy_service: '{{ item.reverse_proxy_service | default(omit) }}'
+    reverse_proxy_url_prefix: '{{ item.reverse_proxy_url_prefix | default(omit) }}'
+    service_port: '{{ item.service_port | default(omit) }}'
     additional_vars: '{{ item.additional_vars | default({}) }}'
   when: item.config_task is defined
   changed_when: false

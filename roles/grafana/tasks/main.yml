@@ -62,7 +62,7 @@
     enabled: true
     name: grafana-server
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - grafana
 

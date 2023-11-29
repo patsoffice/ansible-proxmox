@@ -41,6 +41,10 @@
         owner: caddy
         group: caddy
         mode: '0700'
+      - path: /config/services.d
+        owner: caddy
+        group: caddy
+        mode: '0700'
     mountpoints:
       - src: '{{ backup_host }}:{{ backup_path }}'
         dest: /backups

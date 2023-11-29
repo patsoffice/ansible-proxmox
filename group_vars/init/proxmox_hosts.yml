@@ -57,8 +57,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: dns
-        traefik_service: 'dns0'
-        traefik_hostname: '{{ dns0.traefik_hostname }}'
+        reverse_proxy_service: 'dns0'
+        reverse_proxy_hostname: '{{ dns0.reverse_proxy_hostname }}'
         service_port: 80
       - hostname: '{{ netboot_xyz.hostname }}'
         vmid: '{{ netboot_xyz.vmid }}'
@@ -74,8 +74,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: netboot_xyz
-        traefik_service: netboot_xyz
-        traefik_hostname: '{{ netboot_xyz.traefik_hostname }}'
+        reverse_proxy_service: netboot_xyz
+        reverse_proxy_hostname: '{{ netboot_xyz.reverse_proxy_hostname }}'
         service_port: 80
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
@@ -91,8 +91,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: 'radarr'
-        traefik_service: 'radarr'
-        traefik_hostname: '{{ radarr.traefik_hostname }}'
+        reverse_proxy_service: 'radarr'
+        reverse_proxy_hostname: '{{ radarr.reverse_proxy_hostname }}'
         service_port: 7878
       - hostname: '{{ sonarr.hostname }}'
         vmid: '{{ sonarr.vmid }}'
@@ -108,8 +108,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: sonarr
-        traefik_service: sonarr
-        traefik_hostname: '{{ sonarr.traefik_hostname }}'
+        reverse_proxy_service: sonarr
+        reverse_proxy_hostname: '{{ sonarr.reverse_proxy_hostname }}'
         service_port: 8989
       - hostname: '{{ syslog_ng.hostname }}'
         vmid: '{{ syslog_ng.vmid }}'
@@ -159,8 +159,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: tdarr_server
-        traefik_service: tdarr
-        traefik_hostname: '{{ tdarr_server.traefik_hostname }}'
+        reverse_proxy_service: tdarr
+        reverse_proxy_hostname: '{{ tdarr_server.reverse_proxy_hostname }}'
         service_port: 8265
       - hostname: '{{ tautulli.hostname }}'
         vmid: '{{ tautulli.vmid }}'
@@ -176,8 +176,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: tautulli
-        traefik_service: tautulli
-        traefik_hostname: '{{ tautulli.traefik_hostname }}'
+        reverse_proxy_service: tautulli
+        reverse_proxy_hostname: '{{ tautulli.reverse_proxy_hostname }}'
         service_port: 8181
       - hostname: '{{ home_assistant.hostname }}'
         vmid: '{{ home_assistant.vmid }}'
@@ -215,8 +215,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: dns
-        traefik_service: 'dns1'
-        traefik_hostname: '{{ dns1.traefik_hostname }}'
+        reverse_proxy_service: 'dns1'
+        reverse_proxy_hostname: '{{ dns1.reverse_proxy_hostname }}'
         service_port: 80
       - hostname: '{{ octoprint.hostname }}'
         vmid: '{{ octoprint.vmid }}'
@@ -237,8 +237,8 @@ proxmox_hosts:
           - 'lxc.cgroup2.devices.allow: c 166:* rwm'
           - 'lxc.mount.entry: /dev/ttyACM0 dev/ttyACM0 none bind,optional,create=file'
         config_task: octoprint
-        traefik_service: octoprint
-        traefik_hostname: '{{ octoprint.traefik_hostname }}'
+        reverse_proxy_service: octoprint
+        reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
         service_port: 5000
       - hostname: '{{ sabnzbd.hostname }}'
         vmid: '{{ sabnzbd.vmid }}'
@@ -255,8 +255,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: sabnzbd
-        traefik_service: sabnzbd
-        traefik_hostname: '{{ sabnzbd.traefik_hostname }}'
+        reverse_proxy_service: sabnzbd
+        reverse_proxy_hostname: '{{ sabnzbd.reverse_proxy_hostname }}'
         service_port: 8080
       - hostname: '{{ lidarr.hostname }}'
         vmid: '{{ lidarr.vmid }}'
@@ -272,8 +272,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: 'lidarr'
-        traefik_service: 'lidarr'
-        traefik_hostname: '{{ lidarr.traefik_hostname }}'
+        reverse_proxy_service: 'lidarr'
+        reverse_proxy_hostname: '{{ lidarr.reverse_proxy_hostname }}'
         service_port: 8686
       - hostname: '{{ esphome.hostname }}'
         vmid: '{{ esphome.vmid }}'
@@ -289,8 +289,8 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: esphome
-        traefik_service: esphome
-        traefik_hostname: '{{ esphome.traefik_hostname }}'
+        reverse_proxy_service: esphome
+        reverse_proxy_hostname: '{{ esphome.reverse_proxy_hostname }}'
         service_port: 6052
       - hostname: '{{ grafana.hostname }}'
         vmid: '{{ grafana.vmid }}'
@@ -306,6 +306,6 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: grafana
-        traefik_service: grafana
-        traefik_hostname: '{{ grafana.traefik_hostname }}'
+        reverse_proxy_service: grafana
+        reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
         service_port: 3000

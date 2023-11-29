@@ -1,0 +1,4 @@
+	@{{ caddy_service }} host {{ reverse_proxy_hostname }}
+	handle @{{ caddy_service }} {
+		reverse_proxy {{ caddy_lb_url }}
+	}

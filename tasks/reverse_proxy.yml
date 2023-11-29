@@ -1,0 +1,34 @@
+---
+- name: 'Store reverse proxy info for {{ reverse_proxy_service }}'
+  ansible.builtin.set_fact:
+    caddy_service: '{{ reverse_proxy_service }}'
+    caddy_lb_url: '{{ reverse_proxy_url_prefix | default("http") }}://{{ inventory_hostname }}:{{ service_port }}'
+    traefik_service: '{{ reverse_proxy_service }}'
+    traefik_host_rule: 'Host(`{{ reverse_proxy_hostname }}`)'
+    traefik_lb_url: '{{ reverse_proxy_url_prefix | default("http") }}://{{ inventory_hostname }}:{{ service_port }}'
+
+- name: copy the traefik dynamic config files
+  template:
+    src: 'traefik-router.toml'
+    dest: '{{ traefik_config_path }}/{{ traefik_service }}.toml'
+    mode: 0644
+    owner: root
+    group: root
+    seuser: unconfined_u
+    serole: object_r
+    setype: container_file_t
+    selevel: s0
+  delegate_to: '{{ traefik_host }}'
+  remote_user: '{{ traefik_user }}'
+  become: true
+
+- name: copy the caddy dynamic config files
+  template:
+    src: 'caddy-router.toml'
+    dest: '{{ caddy_config_path }}/{{ caddy_service }}.toml'
+    mode: 0644
+    owner: '{{ caddy_uid }}'
+    group: '{{ caddy_gid }}'
+  delegate_to: '{{ caddy_host }}'
+  remote_user: '{{ caddy_user }}'
+  become: true

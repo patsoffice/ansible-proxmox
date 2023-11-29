@@ -73,7 +73,7 @@
   tags:
     - esphome
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - esphome
 

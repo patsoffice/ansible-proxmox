@@ -55,6 +55,7 @@
     cmd: "strings /opt/radarr/Radarr.Core.dll | grep Version= | grep Radarr.Common | head -1 | awk -F'Version=' '{ print $2 }' | awk -F, '{print $1}'"
   register: file_version
   when: radarr_core_dll.stat.exists
+  changed_when: false
   tags:
     - radarr
 
@@ -115,7 +116,7 @@
   tags:
     - radarr
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - radarr
 

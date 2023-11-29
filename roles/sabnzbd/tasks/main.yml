@@ -56,6 +56,7 @@
     cmd: "/usr/bin/grep ^__version__ /opt/sabnzbd/sabnzbd/version.py | awk -F\\\" '{print $2}'"
   register: file_version
   when: sabnzbd_version.stat.exists
+  changed_when: false
   tags:
     - sabnzbd
 
@@ -123,7 +124,7 @@
   tags:
     - sabnzbd
 
-- import_tasks: traefik.yml
+- import_tasks: reverse_proxy.yml
   tags:
     - sabnzbd
 

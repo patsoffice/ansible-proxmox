@@ -63,6 +63,7 @@
     cmd: "cat /opt/tdarr/version"
   register: file_version
   when: tdarr_version.stat.exists
+  changed_when: false
   tags:
     - tdarr_node
 
