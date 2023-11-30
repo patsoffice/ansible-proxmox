@@ -67,6 +67,15 @@ letsencrypt_duckdns_token: '8675309-4242-4460-a210-93add45be0c0'
 letsencrypt_duckdns_url: '*.domain.duckdns.org'
 ```
 
+## all/mqtt.yml
+
+The `mqtt.yml` variables have authentication information for other apps to use when connecting to the MQTT broker. The following keys are required:
+
+```yaml
+mqtt_user: mqtt_username
+mqtt_password: secure_mqtt_password
+```
+
 ## all/networking.yml
 
 The `networking.yml` variables have container networking information. The following keys are required:

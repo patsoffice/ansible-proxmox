@@ -61,6 +61,8 @@
     daemon_reload: true
     enabled: true
     name: grafana-server
+  tags:
+    - grafana
 
 - import_tasks: reverse_proxy.yml
   tags:

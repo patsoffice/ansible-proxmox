@@ -1,0 +1,78 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - mosquitto
+      - mosquitto-clients
+      - nfs-common
+      - rdiff-backup
+  tags:
+    - mqtt
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: mosquitto
+        group: mosquitto
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - mqtt
+
+- name: Copy the config file
+  ansible.builtin.copy:
+    src: mosquitto.conf
+    dest: /etc/mosquitto/mosquitto.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: mosquitto_conf
+  tags:
+    - mqtt
+
+- name: Copy the password file
+  ansible.builtin.copy:
+    src: pwfile
+    dest: /etc/mosquitto/pwfile
+    mode: 0600
+    owner: mosquitto
+    group: mosquitto
+  register: mosquitto_pw
+  tags:
+    - mqtt
+
+- name: Check that /config/mosquitto.db exists
+  ansible.builtin.stat:
+    path: /config/mosquitto.db
+  register: mosquitto_db
+  tags:
+    - mqtt
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/mqtt/ /config
+  ignore_errors: true
+  when: not mosquitto_db.stat.exists
+  tags:
+    - mqtt
+
+- name: Start and enable the service
+  ansible.builtin.systemd:
+    state: '{{ mosquitto_conf.changed or mosquitto_pw.changed | ternary("restarted", "started") }}'
+    daemon_reload: true
+    enabled: true
+    name: mosquitto.service
+  tags:
+    - mqtt
+
+- import_tasks: backup.yml
+  vars:
+  vars:
+    backup_src: /config
+    backup_dest: /backups/mqtt
+  tags:
+    - mqtt
