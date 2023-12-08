@@ -42,19 +42,13 @@
   command: cat /opt/netboot.xyz/version.txt
   register: version_txt_cmd
   when: version_txt.stat.exists
+  changed_when: false
   tags:
     - netboot_xyz
 
 - name: Set the netboot.xyz file version
   ansible.builtin.set_fact:
     installed_version: '{{ version_txt_cmd.stdout_lines[0] | default("missing") }}'
-  tags:
-    - netboot_xyz
-
-- name: debug version variables
-  ansible.builtin.debug:
-    msg: "Web version: {{ web_version }}, Installed version: {{ installed_version }}"
-  when: web_version is defined and installed_version is defined
   tags:
     - netboot_xyz
 
