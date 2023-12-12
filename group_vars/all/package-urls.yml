@@ -1,7 +1,7 @@
 ---
 # https://github.com/caddyserver/caddy/releases
-caddy_version: v2.7.5
-caddy_go_url: https://go.dev/dl/go1.21.4.linux-amd64.tar.gz
+caddy_version: v2.7.6
+caddy_go_url: https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
 caddy_dns_cloudflare: github.com/caddy-dns/cloudflare
 caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
@@ -10,7 +10,7 @@ dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
-lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v1.4.5.3639/Lidarr.master.1.4.5.3639.linux-core-x64.tar.gz
+lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.0.7.3849/Lidarr.master.2.0.7.3849.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.75.tar.gz
 # https://github.com/pi-hole/pi-hole/releases
@@ -24,7 +24,7 @@ sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.1.0/
 # https://github.com/Sonarr/Sonarr/tags
 sonarr_master_url: https://download.sonarr.tv/v3/main/3.0.10.1567/Sonarr.main.3.0.10.1567.linux.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
-tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.3.tar.gz
+tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.4.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.16.01/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.16.01/linux_x64/Tdarr_Server.zip
