@@ -85,6 +85,12 @@
   roles:
     - radarr
 
+- hosts: redis_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - redis
+
 - hosts: sabnzbd_hosts
   gather_facts: yes
   remote_user: root
