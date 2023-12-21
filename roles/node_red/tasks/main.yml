@@ -1,0 +1,93 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+  tags:
+    - node_red
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/nodesource.asc] https://deb.nodesource.com/node_20.x nodistro main"
+    state: present
+    filename: nodesource
+  tags:
+    - node_red
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: node_red
+    groupname: node_red
+    shell: /usr/sbin/nologin
+    packages:
+      - apt-transport-https
+      - build-essential
+      - gnupg
+      - nodejs
+      - nfs-common
+      - python3
+      - rdiff-backup
+      - software-properties-common
+  tags:
+    - node_red
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: node_red
+        group: node_red
+      - path: /opt
+        owner: root
+        group: root
+      - path: /opt/node_red
+        owner: node_red
+        group: node_red
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - node_red
+
+- name: Install "node-red" node.js package.
+  community.general.npm:
+    name: node-red
+    path: /opt/node_red
+  register: node_red_install
+  tags:
+    - node_red
+
+- name: Check that /config/settings.js exists
+  ansible.builtin.stat:
+    path: /config/settings.js
+  register: settings_js
+  tags:
+    - node_red
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/node_red/ /config
+  ignore_errors: true
+  when: not settings_js.stat.exists
+  tags:
+    - node_red
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'node-red.service'
+    state: '{{ node_red_install.changed | ternary("restarted", "started") }}'
+  tags:
+    - node_red
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - node_red
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/node_red'
+  tags:
+    - node_red

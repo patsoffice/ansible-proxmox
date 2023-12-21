@@ -73,6 +73,12 @@
   roles:
     - netboot_xyz
 
+- hosts: node_red_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - node_red
+
 - hosts: octoprint_hosts
   gather_facts: yes
   remote_user: root

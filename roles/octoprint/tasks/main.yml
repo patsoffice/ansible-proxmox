@@ -88,7 +88,6 @@
 
 - import_tasks: backup.yml
   vars:
-  vars:
     backup_src: '/config'
     backup_dest: '/backups/octoprint'
   tags:

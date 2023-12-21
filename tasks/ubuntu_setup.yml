@@ -2,10 +2,10 @@
 - name: Create the group
   ansible.builtin.group:
     name: '{{ groupname }}'
-    gid: '{{ gid }}'
+    gid: '{{ gid | default(1000) }}'
     state: present
     system: '{{ system | default("true") | bool }}'
-  when: groupname is defined and gid is defined
+  when: groupname is defined
 
 - name: Create the user
   ansible.builtin.user:

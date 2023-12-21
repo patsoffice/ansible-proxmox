@@ -76,7 +76,6 @@
 
 - import_tasks: backup.yml
   vars:
-  vars:
     backup_src: '/var/lib/redis'
     backup_dest: '/backups/redis'
   tags:

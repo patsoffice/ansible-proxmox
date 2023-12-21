@@ -323,6 +323,23 @@ proxmox_hosts:
         reverse_proxy_service: grafana
         reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
         service_port: 3000
+      - hostname: '{{ node_red.hostname }}'
+        vmid: '{{ node_red.vmid }}'
+        password: '{{ node_red.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: node_red
+        reverse_proxy_service: node_red
+        reverse_proxy_hostname: '{{ node_red.reverse_proxy_hostname }}'
+        service_port: 1880
       - hostname: '{{ redis.hostname }}'
         vmid: '{{ redis.vmid }}'
         password: '{{ redis.password }}'
