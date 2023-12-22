@@ -79,6 +79,12 @@
   roles:
     - node_red
 
+- hosts: plex_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - plex
+
 - hosts: octoprint_hosts
   gather_facts: yes
   remote_user: root

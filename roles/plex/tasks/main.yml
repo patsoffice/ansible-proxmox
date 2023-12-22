@@ -1,0 +1,91 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://downloads.plex.tv/plex-keys/PlexSign.key
+    dest: /etc/apt/trusted.gpg.d/plex.asc
+  tags:
+    - plex
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64,signed-by=/etc/apt/trusted.gpg.d/plex.asc] https://downloads.plex.tv/repo/deb/ public main"
+    state: present
+    filename: plex
+  tags:
+    - plex
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - apt-transport-https
+      - gnupg
+      - intel-opencl-icd
+      - nfs-common
+      - ocl-icd-libopencl1
+      - plexmediaserver
+      - rdiff-backup
+      - software-properties-common
+      - va-driver-all
+  tags:
+    - plex
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /transcode
+        owner: plex
+        group: plex
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+      - src: '{{ movies_host }}:{{ movies_path }}'
+        dest: /mnt/movies
+        owner: '{{ movies_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ music_host }}:{{ music_path }}'
+        dest: /mnt/music
+        owner: '{{ music_uid }}'
+        group: '{{ media_gid }}'
+      - src: '{{ tv_host }}:{{ tv_path }}'
+        dest: /mnt/tv
+        owner: '{{ tv_uid }}'
+        group: '{{ media_gid }}'
+  tags:
+    - plex
+
+- name: Check that /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml exists
+  ansible.builtin.stat:
+    path: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+  register: preferences_xml
+  tags:
+    - plex
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/plex/ /var/lib/plexmediaserver
+  ignore_errors: true
+  when: not preferences_xml.stat.exists
+  tags:
+    - plex
+
+- name: Start and enable the service
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: true
+    enabled: true
+    name: plexmediaserver
+  tags:
+    - plex
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - plex
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: /var/lib/plexmediaserver
+    backup_dest: /backups/plex
+  tags:
+    - plex

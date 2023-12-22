@@ -91,6 +91,28 @@ proxmox_hosts:
         reverse_proxy_service: netboot_xyz
         reverse_proxy_hostname: '{{ netboot_xyz.reverse_proxy_hostname }}'
         service_port: 80
+      - hostname: '{{ plex.hostname }}'
+        vmid: '{{ plex.vmid }}'
+        password: '{{ plex.password }}'
+        unprivileged: false
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 6
+        memory: 8192
+        swap: 8192
+        storage: 'local-zfs'
+        rootfs_size: 50
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 226:* rwm'
+          - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
+          - 'lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file'
+        config_task: plex
+        reverse_proxy_service: plex
+        reverse_proxy_hostname: '{{ plex.reverse_proxy_hostname }}'
+        service_port: 32400
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
         password: '{{ radarr.password }}'
@@ -145,7 +167,7 @@ proxmox_hosts:
         password: '{{ tdarr_node.password }}'
         unprivileged: false
         ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
-        cores: 10
+        cores: 6
         memory: 16384
         swap: 4096
         storage: 'local-zfs'
