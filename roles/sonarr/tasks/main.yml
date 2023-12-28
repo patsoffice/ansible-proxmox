@@ -56,10 +56,12 @@
         group: '{{ backup_group }}'
       - src: '{{ tv_host }}:{{ tv_path }}'
         dest: /tv
+        mode: '0775'
         owner: '{{ tv_uid }}'
         group: '{{ media_gid }}'
       - src: '{{ download_host }}:{{ download_path }}'
         dest: /downloads
+        mode: '0775'
         owner: '{{ download_uid }}'
         group: '{{ media_gid }}'
   tags:

@@ -32,14 +32,17 @@
     mountpoints:
       - src: '{{ movies_host }}:{{ movies_path }}'
         dest: /movies
+        mode: '0775'
         owner: '{{ movies_uid }}'
         group: '{{ media_gid }}'
       - src: '{{ tv_host }}:{{ tv_path }}'
         dest: /tv
+        mode: '0775'
         owner: '{{ tv_uid }}'
         group: '{{ media_gid }}'
       - src: '{{ transcode_host }}:{{ transcode_cache }}'
         dest: /opt/tdarr/transcode-cache
+        mode: '0775'
         owner: '{{ transcode_uid }}'
         group: '{{ media_gid }}'
   tags:

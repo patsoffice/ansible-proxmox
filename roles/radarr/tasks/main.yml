@@ -28,10 +28,12 @@
         group: '{{ backup_group }}'
       - src: '{{ movies_host }}:{{ movies_path }}'
         dest: /movies
+        mode: '0775'
         owner: '{{ movies_uid }}'
         group: '{{ media_gid }}'
       - src: '{{ download_host }}:{{ download_path }}'
         dest: /downloads
+        mode: '0775'
         owner: '{{ download_uid }}'
         group: '{{ media_gid }}'
   tags:
