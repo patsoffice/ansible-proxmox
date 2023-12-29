@@ -233,6 +233,9 @@ proxmox_hosts:
     api_host: '{{ pve006.api_host }}'
     api_user: '{{ pve006.api_user }}'
     api_password: '{{ pve006.api_password }}'
+    udev_rules:
+      prusa: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="2c99", ATTRS{idProduct}=="0002", SYMLINK+="prusa", MODE="0660", GROUP="dialout"'
+      z-wave: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="0658", ATTRS{idProduct}=="0200", SYMLINK+="z-wave", MODE="0660", GROUP="dialout"'
     zfs_pools:
       - rpool
     containers:
@@ -268,10 +271,8 @@ proxmox_hosts:
           - 'nesting=1'
         proxmox_default_behavior: compatibility
         config_changes:
-          - 'lxc.cgroup2.devices.allow: c 189:1 rwm'
-          - 'lxc.mount.entry: /dev/bus/usb/003/002 dev/bus/usb/003/002 none bind,optional,create=file'
           - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/ttyACM0 dev/ttyACM0 none bind,optional,create=file'
+          - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
         config_task: octoprint
         reverse_proxy_service: octoprint
         reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
@@ -376,3 +377,23 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: redis
+      - hostname: '{{ zwave_js_ui.hostname }}'
+        vmid: '{{ zwave_js_ui.vmid }}'
+        password: '{{ zwave_js_ui.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+          - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
+        config_task: zwave_js_ui
+        reverse_proxy_service: zwave_js_ui
+        reverse_proxy_hostname: '{{ zwave_js_ui.reverse_proxy_hostname }}'
+        service_port: 8091

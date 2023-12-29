@@ -1,0 +1,114 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: zwavejs
+    username: zwavejs
+    packages:
+      - binutils
+      - nfs-common
+      - rdiff-backup
+      - unzip
+  tags:
+    - zwave_js_ui
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: zwavejs
+        group: zwavejs
+      - path: /opt/zwave-js-ui
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - zwave_js_ui
+
+- name: Get zwave-js-ui URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ zwave_js_ui_package_url | regex_search('/v([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - zwave_js_ui
+
+- name: Check that /opt/zwave-js-ui/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/zwave-js-ui/version.txt
+  register: version_txt
+  tags:
+    - zwave_js_ui
+
+- name: Get the installed version
+  command: cat /opt/zwave-js-ui/version.txt
+  register: version_txt_cmd
+  when: version_txt.stat.exists
+  changed_when: false
+  tags:
+    - zwave_js_ui
+
+- name: Set the zwave-js-ui file version
+  ansible.builtin.set_fact:
+    installed_version: '{{ version_txt_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - zwave_js_ui
+
+- name: Download latest zwave-js-ui
+  ansible.builtin.get_url:
+    url: '{{ zwave_js_ui_package_url }}'
+    dest: /opt/zwave_js_ui.zip
+  when: web_version != installed_version
+  tags:
+    - zwave_js_ui
+
+- name: Extract the zwave-js-ui tarball
+  ansible.builtin.unarchive:
+    src: /opt/zwave_js_ui.zip
+    dest: /opt/zwave-js-ui
+    remote_src: true
+  when: web_version != installed_version
+  tags:
+    - zwave_js_ui
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/zwave_js_ui.zip
+    state: absent
+  when: web_version != installed_version
+  tags:
+    - zwave_js_ui
+
+- name: Check that /config/store/settings.json exists
+  ansible.builtin.stat:
+    path: /config/store/settings.json
+  register: settings_json
+  tags:
+    - zwave_js_ui
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/zwave-js-ui/ /config
+  ignore_errors: true
+  when: not settings_json.stat.exists
+  tags:
+    - zwave_js_ui
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'zwave-js-ui.service'
+    state: '{{ (web_version != installed_version) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - zwave_js_ui
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - zwave_js_ui
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/zwave-js-ui'
+  tags:
+    - zwave_js_ui

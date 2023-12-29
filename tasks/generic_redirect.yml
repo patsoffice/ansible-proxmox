@@ -1,21 +1,17 @@
 ---
-- name: 'Store traefik info for {{ item.traefik_service }}'
+- name: 'Store traefik info for {{ item.service }}'
   ansible.builtin.set_fact:
-    traefik_service: '{{ item.traefik_service }}'
-    traefik_host_rule: '{{ item.traefik_host_rule }}'
-    traefik_lb_url: '{{ item.traefik_lb_url }}'
+    reverse_proxy_hostname: '{{ item.reverse_proxy_hostname }}'
+    caddy_service: '{{ item.service }}'
+    caddy_lb_url: '{{ item.lb_url }}'
 
-- name: copy dynamic config files
+- name: copy the caddy dynamic config files
   template:
-    src: 'traefik-router.toml'
-    dest: '{{ traefik_config_path }}/{{ traefik_service }}.toml'
+    src: 'caddy-router.toml'
+    dest: '{{ caddy_config_path }}/{{ caddy_service }}.toml'
     mode: 0644
-    owner: root
-    group: root
-    seuser: unconfined_u
-    serole: object_r
-    setype: container_file_t
-    selevel: s0
-  delegate_to: '{{ traefik_host }}'
-  remote_user: '{{ traefik_user }}'
+    owner: '{{ caddy_uid }}'
+    group: '{{ caddy_gid }}'
+  delegate_to: '{{ caddy_host }}'
+  remote_user: '{{ caddy_user }}'
   become: true

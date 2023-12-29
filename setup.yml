@@ -12,6 +12,7 @@
     - zfs_features
     - cpufreq
     - postfix
+    - udev
     - containers
 
 # This sets up PCIe passthrough for VMs on these hosts. The hosts are defined
@@ -138,6 +139,12 @@
   remote_user: root
   roles:
     - tdarr_server
+
+- hosts: zwave_js_ui_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - zwave_js_ui
 
 - hosts: home_assistant_hosts
   gather_facts: yes

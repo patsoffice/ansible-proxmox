@@ -1,0 +1,12 @@
+---
+- name: copy the udev admin rules
+  template:
+    src: udev
+    dest: "/etc/udev/rules.d/98-{{ item.key }}.rules"
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ proxmox_udev_rules | dict2items }}"
+  notify: update udev
+  tags:
+    - udev

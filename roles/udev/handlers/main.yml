@@ -1,0 +1,4 @@
+---
+
+- name: update udev
+  shell: "udevadm control --reload-rules && udevadm trigger"

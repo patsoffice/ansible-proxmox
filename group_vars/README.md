@@ -106,12 +106,12 @@ The `vacuum_redirects.yml` variables have information so that Traefik is used as
 
 ```yaml
 vacuum_redirects:
-  - traefik_service: 'downstairs_vacuum'
-    traefik_host_rule: 'Host(`downstairs-vacuum.domain.com`)'
-    traefik_lb_url: 'http://10.13.5.1/'
-  - traefik_service: 'upstairs_vacuum'
-    traefik_host_rule: 'Host(`upstairs-vacuum.domain.com`)'
-    traefik_lb_url: 'http://10.13.5.2/'
+  - service: 'downstairs_vacuum'
+    lb_url: 'http://10.13.5.1'
+    reverse_proxy_hostname: 'downstairs-vacuum.domain.com'
+  - service: 'upstairs_vacuum'
+    lb_url: 'http://10.13.5.2'
+    reverse_proxy_hostname: 'upstairs-vacuum.domain.com'
 ```
 
 ## init/proxmox_hosts.yml
