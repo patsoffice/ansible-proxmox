@@ -1,0 +1,10 @@
+---
+
+- ansible.builtin.include_tasks: generic_redirect.yml
+  args:
+    apply:
+      tags:
+        - proxmox_redirects
+  loop: '{{ proxmox_reverse_proxy }}'
+  tags:
+    - proxmox_redirects

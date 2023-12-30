@@ -14,6 +14,7 @@
     - postfix
     - udev
     - containers
+    - proxmox_redirects
 
 # This sets up PCIe passthrough for VMs on these hosts. The hosts are defined
 # in global_vars/init/proxmox_hosts.yml
@@ -32,6 +33,7 @@
       architecture: intel
       enable_gvt: true
 
+# This sets up the containers
 - hosts: caddy_hosts
   gather_facts: yes
   remote_user: root

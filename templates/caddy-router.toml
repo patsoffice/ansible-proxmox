@@ -1,4 +1,12 @@
 	@{{ caddy_service }} host {{ reverse_proxy_hostname }}
 	handle @{{ caddy_service }} {
+{% if caddy_lb_url.startswith("http://") %}
 		reverse_proxy {{ caddy_lb_url }}
+{% else %}
+		reverse_proxy {{ caddy_lb_url }} {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+{% endif %}
 	}

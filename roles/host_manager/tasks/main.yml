@@ -26,6 +26,10 @@
     proxmox_zfs_pools: '{{ proxmox_hosts[item].zfs_pools }}'
     proxmox_containers: '{{ proxmox_hosts[item].containers if proxmox_hosts[item].containers is defined }}'
     proxmox_udev_rules: '{{ proxmox_hosts[item].udev_rules | default({}) }}'
+    proxmox_reverse_proxy:
+      - service: '{{ item }}'
+        reverse_proxy_hostname: '{{ item }}.{{ caddy_domain }}'
+        lb_url: 'https://{{ proxmox_hosts[item].api_host }}:8006'
   loop: '{{ host_keys }}'
   no_log: true
   changed_when: false
