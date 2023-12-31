@@ -7,6 +7,8 @@ caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
 dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.1.5/dnscrypt-proxy-linux_x86_64-2.1.5.tar.gz
+# https://github.com/jgraph/drawio/releases
+drawio_war_url: https://github.com/jgraph/drawio/releases/download/v22.1.16/draw.war
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
@@ -28,6 +30,8 @@ tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Server.zip
+# Tomcat versions come from https://tomcat.apache.org/download-90.cgi
+tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.84/bin/apache-tomcat-9.0.84.tar.gz
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.0.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases

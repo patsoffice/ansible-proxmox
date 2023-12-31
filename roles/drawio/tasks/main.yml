@@ -1,0 +1,263 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    groupname: drawio
+    username: drawio
+    packages:
+      - nfs-common
+      - openjdk-11-jre
+      - openjdk-11-jdk
+      - rdiff-backup
+      - unzip
+      - xmlstarlet
+  tags:
+    - drawio
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt/tomcat
+        owner: root
+        group: drawio
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - drawio
+
+- name: Get tomcat URL version
+  ansible.builtin.set_fact:
+    tomcat_web_version: "{{ tomcat_core_dist_url | regex_search('/v([\\d.]+)/bin', '\\1') | first }}"
+  tags:
+    - drawio
+
+- name: Check that /opt/tomcat/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/tomcat/version.txt
+  register: tomcat_version_txt
+  tags:
+    - drawio
+
+- name: Get the installed version
+  command: cat /opt/tomcat/version.txt
+  register: tomcat_version_txt_cmd
+  when: tomcat_version_txt.stat.exists
+  changed_when: false
+  tags:
+    - drawio
+
+- name: Set the tomcat file version
+  ansible.builtin.set_fact:
+    tomcat_installed_version: '{{ tomcat_version_txt_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - drawio
+
+- name: Download latest tomcat
+  ansible.builtin.get_url:
+    url: '{{ tomcat_core_dist_url }}'
+    dest: /opt/tomcat.tar.gz
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Extract the tomcat tarball
+  ansible.builtin.unarchive:
+    src: /opt/tomcat.tar.gz
+    dest: /opt/tomcat
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/tomcat.tar.gz
+    state: absent
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Change group ownership of tomcat
+  ansible.builtin.file:
+    path: /opt/tomcat
+    state: directory
+    recurse: true
+    owner: root
+    group: drawio
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Change group ownership of tomcat
+  ansible.builtin.file:
+    path: /opt/tomcat/conf
+    state: directory
+    recurse: true
+    owner: root
+    group: drawio
+    mode: u=rwX,g=rwX
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Change group ownership of tomcat
+  ansible.builtin.file:
+    path: '/opt/tomcat/{{ item }}'
+    state: directory
+    recurse: true
+    owner: drawio
+    group: drawio
+  loop:
+    - logs
+    - temp
+    - webapps
+    - work
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Set the tomcat version.txt file
+  ansible.builtin.template:
+    src: version.txt
+    dest: /opt/tomcat/version.txt
+    mode: 0660
+    owner: root
+    group: drawio
+  vars:
+    version: '{{ tomcat_web_version }}'
+  when: tomcat_web_version != tomcat_installed_version
+  tags:
+    - drawio
+
+- name: Get drawio URL version
+  ansible.builtin.set_fact:
+    drawio_web_version: "{{ drawio_war_url | regex_search('download/v([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - drawio
+
+- name: Check that /opt/tomcat/webapps/draw/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/tomcat/webapps/draw/version.txt
+  register: drawio_version_txt
+  tags:
+    - drawio
+
+- name: Get the installed version
+  command: cat /opt/tomcat/webapps/draw/version.txt
+  register: drawio_version_txt_cmd
+  when: drawio_version_txt.stat.exists
+  changed_when: false
+  tags:
+    - drawio
+
+- name: Set the drawio file version
+  ansible.builtin.set_fact:
+    drawio_installed_version: '{{ drawio_version_txt_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - drawio
+
+- name: Download latest drawio
+  ansible.builtin.get_url:
+    url: '{{ drawio_war_url }}'
+    dest: /opt/drawio.war
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- name: Make the draw directory
+  ansible.builtin.file:
+    path: /opt/tomcat/webapps/draw
+    state: directory
+    owner: drawio
+    group: drawio
+    mode: '0750'
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- name: Extract the drawio war
+  ansible.builtin.unarchive:
+    src: /opt/drawio.war
+    dest: /opt/tomcat/webapps/draw
+    remote_src: true
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/drawio.war
+    state: absent
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- name: Change the ownership of the drawio directory
+  ansible.builtin.file:
+    path: /opt/tomcat/webapps/draw
+    state: directory
+    recurse: true
+    owner: drawio
+    group: drawio
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- name: Check if docBase is set to "draw"
+  ansible.builtin.lineinfile:
+    path: /opt/tomcat/conf/server.xml
+    regex: 'docBase="draw"'
+    state: absent
+  changed_when: false
+  check_mode: true
+  register: docbase
+  tags:
+    - drawio
+
+- name: Foo
+  ansible.builtin.debug:
+    var: docbase
+  tags:
+    - drawio
+
+- name: Update the server XML docBase
+  ansible.builtin.shell:
+    cmd: |
+      xmlstarlet ed \
+          -P -S -L \
+          -i '/Server/Service/Engine/Host/Valve' -t 'elem' -n 'Context' \
+          -i '/Server/Service/Engine/Host/Context' -t 'attr' -n 'path' -v '/' \
+          -i '/Server/Service/Engine/Host/Context[@path="/"]' -t 'attr' -n 'docBase' -v 'draw' \
+          -s '/Server/Service/Engine/Host/Context[@path="/"]' -t 'elem' -n 'WatchedResource' -v 'WEB-INF/web.xml' \
+          /opt/tomcat/conf/server.xml
+  when: not docbase.found
+  tags:
+    - drawio
+
+- name: Set the drawio version.txt file
+  ansible.builtin.template:
+    src: version.txt
+    dest: /opt/tomcat/webapps/draw/version.txt
+    mode: 0660
+    owner: drawio
+    group: drawio
+  vars:
+    version: '{{ drawio_web_version }}'
+  when: drawio_web_version != drawio_installed_version
+  tags:
+    - drawio
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'tomcat.service'
+    state: '{{ (drawio_web_version != drawio_installed_version or tomcat_web_version != tomcat_installed_version) | ternary("restarted", "started") }}'
+  tags:
+    - drawio
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - drawio

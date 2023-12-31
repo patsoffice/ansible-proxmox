@@ -3,6 +3,9 @@
   vars:
     groupname: zwavejs
     username: zwavejs
+    groupnames:
+      - tty
+      - dialout
     packages:
       - binutils
       - nfs-common

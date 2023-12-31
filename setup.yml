@@ -46,6 +46,12 @@
   roles:
     - dns
 
+- hosts: drawio_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - drawio
+
 - hosts: esphome_hosts
   gather_facts: yes
   remote_user: root

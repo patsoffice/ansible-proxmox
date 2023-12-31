@@ -60,6 +60,23 @@ proxmox_hosts:
         reverse_proxy_service: 'dns0'
         reverse_proxy_hostname: '{{ dns0.reverse_proxy_hostname }}'
         service_port: 80
+      - hostname: '{{ drawio.hostname }}'
+        vmid: '{{ drawio.vmid }}'
+        password: '{{ drawio.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1536
+        swap: 1536
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: drawio
+        reverse_proxy_service: drawio
+        reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
+        service_port: 8080
       - hostname: '{{ mqtt.hostname }}'
         vmid: '{{ mqtt.vmid }}'
         password: '{{ mqtt.password }}'
