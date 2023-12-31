@@ -19,11 +19,6 @@
       - path: /opt/tomcat
         owner: root
         group: drawio
-    mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
-        dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
   tags:
     - drawio
 
