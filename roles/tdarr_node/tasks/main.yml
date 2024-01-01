@@ -40,7 +40,7 @@
         mode: '0775'
         owner: '{{ tv_uid }}'
         group: '{{ media_gid }}'
-      - src: '{{ transcode_host }}:{{ transcode_cache }}'
+      - src: '{{ transcode_host }}:{{ transcode_path }}'
         dest: /opt/tdarr/transcode-cache
         mode: '0775'
         owner: '{{ transcode_uid }}'

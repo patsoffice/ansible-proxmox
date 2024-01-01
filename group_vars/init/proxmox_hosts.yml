@@ -31,6 +31,25 @@ proxmox_hosts:
         reverse_proxy_service: drawio
         reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
         service_port: 8080
+      - hostname: '{{ tdarr_node2.hostname }}'
+        vmid: '{{ tdarr_node2.vmid }}'
+        password: '{{ tdarr_node2.password }}'
+        unprivileged: false
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 6
+        memory: 16384
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 8
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 226:* rwm'
+          - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
+          - 'lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file'
+        config_task: 'tdarr_node'
   pve004:
     api_host: '{{ pve004.api_host }}'
     api_user: '{{ pve004.api_user }}'
