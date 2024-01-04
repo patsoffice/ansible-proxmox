@@ -213,12 +213,6 @@
   tags:
     - drawio
 
-- name: Foo
-  ansible.builtin.debug:
-    var: docbase
-  tags:
-    - drawio
-
 - name: Update the server XML docBase
   ansible.builtin.shell:
     cmd: |

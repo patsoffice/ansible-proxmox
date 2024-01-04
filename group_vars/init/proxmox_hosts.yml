@@ -50,6 +50,23 @@ proxmox_hosts:
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
           - 'lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file'
         config_task: 'tdarr_node'
+      - hostname: '{{ transmission.hostname }}'
+        vmid: '{{ transmission.vmid }}'
+        password: '{{ transmission.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1536
+        swap: 1536
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: transmission
+        reverse_proxy_service: transmission
+        reverse_proxy_hostname: '{{ transmission.reverse_proxy_hostname }}'
+        service_port: 9091
   pve004:
     api_host: '{{ pve004.api_host }}'
     api_user: '{{ pve004.api_user }}'
@@ -172,8 +189,8 @@ proxmox_hosts:
         password: '{{ sonarr.password }}'
         ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
         cores: 1
-        memory: 1024
-        swap: 1024
+        memory: 2048
+        swap: 2048
         storage: 'local-zfs'
         rootfs_size: 16
         features:

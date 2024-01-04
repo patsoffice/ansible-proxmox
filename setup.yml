@@ -148,6 +148,12 @@
   roles:
     - tdarr_server
 
+- hosts: transmission_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - transmission
+
 - hosts: zwave_js_ui_hosts
   gather_facts: yes
   remote_user: root

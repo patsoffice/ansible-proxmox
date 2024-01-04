@@ -23,6 +23,9 @@
       - path: '/opt/tdarr/Tdarr_Node'
         owner: root
         group: root
+      - path: '/opt/tdarr/Tdarr_Node/assets/app/plugins'
+        owner: tdarr
+        group: media
       - path: '/opt/tdarr/configs'
         owner: tdarr
         group: media
