@@ -67,7 +67,7 @@
     name: blocklist update
     minute: "0"
     hour: "23"
-    user: transmission
+    user: debian-transmission
     job: 'transmission-remote --blocklist-update &> /dev/null'
     cron_file: transmission-blocklist-update
   tags:
@@ -77,7 +77,7 @@
   ansible.builtin.cron:
     name: remove done torrent
     minute: '*/5'
-    user: transmission
+    user: debian-transmission
     job: '/var/lib/transmission/bin/remove-done-torrent &> /dev/null'
     cron_file: remove-done-torrent
   tags:
