@@ -14,7 +14,7 @@ home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.0.7.3849/Lidarr.master.2.0.7.3849.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
-netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.75.tar.gz
+netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.76.tar.gz
 # https://github.com/pi-hole/pi-hole/releases
 pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.2.tar.gz
 # https://www.openssl.org/source/
@@ -22,9 +22,9 @@ openssl_src_url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.2.6.8376/Radarr.master.5.2.6.8376.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
-sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.1.0/SABnzbd-4.1.0-src.tar.gz
-# https://github.com/Sonarr/Sonarr/tags
-sonarr_master_url: https://download.sonarr.tv/v3/main/3.0.10.1567/Sonarr.main.3.0.10.1567.linux.tar.gz
+sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.2.0/SABnzbd-4.2.0-src.tar.gz
+# https://github.com/Sonarr/Sonarr/tags, https://download.sonarr.tv/v4/main/
+sonarr_master_url: https://download.sonarr.tv/v4/main/4.0.0.748/Sonarr.main.4.0.0.748.linux-x64.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.4.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json

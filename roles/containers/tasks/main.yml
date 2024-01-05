@@ -22,11 +22,13 @@
     content_type: vztmpl
     template: '{{ item.ostemplate }}'
   loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
+  no_log: true
   tags:
     - containers
 
 - name: run container task
   include_tasks: container.yml
   loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
+  no_log: true
   tags:
     - containers

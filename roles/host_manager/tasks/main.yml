@@ -12,6 +12,7 @@
   set_fact:
     host_keys: "{{ host_keys | default([]) + [ item.key ] }}"
   loop: "{{ proxmox_hosts | dict2items if select_hosts is not defined else select_hosts | dict2items }}"
+  no_log: true
   tags:
     - host_manager
 
