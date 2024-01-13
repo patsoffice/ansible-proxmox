@@ -8,7 +8,7 @@ caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
 dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.1.5/dnscrypt-proxy-linux_x86_64-2.1.5.tar.gz
 # https://github.com/jgraph/drawio/releases
-drawio_war_url: https://github.com/jgraph/drawio/releases/download/v22.1.16/draw.war
+drawio_war_url: https://github.com/jgraph/drawio/releases/download/v22.1.18/draw.war
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.11.6
 # https://github.com/Lidarr/Lidarr/releases
@@ -16,13 +16,13 @@ lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.0.7.384
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.76.tar.gz
 # https://github.com/pi-hole/pi-hole/releases
-pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.2.tar.gz
+pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.3.tar.gz
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.2.6.8376/Radarr.master.5.2.6.8376.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
-sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.2.0/SABnzbd-4.2.0-src.tar.gz
+sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.2.1/SABnzbd-4.2.1-src.tar.gz
 # https://github.com/Sonarr/Sonarr/tags, https://download.sonarr.tv/v4/main/
 sonarr_master_url: https://download.sonarr.tv/v4/main/4.0.0.748/Sonarr.main.4.0.0.748.linux-x64.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
@@ -31,7 +31,7 @@ tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Server.zip
 # Tomcat versions come from https://tomcat.apache.org/download-90.cgi
-tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.84/bin/apache-tomcat-9.0.84.tar.gz
+tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.0.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases
