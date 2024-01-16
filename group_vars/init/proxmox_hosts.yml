@@ -357,7 +357,7 @@ proxmox_hosts:
         memory: 1024
         swap: 1024
         storage: 'local-zfs'
-        rootfs_size: 32
+        rootfs_size: 40
         features:
           - 'nesting=1'
           - 'mount=nfs'
