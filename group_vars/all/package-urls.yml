@@ -35,4 +35,4 @@ tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apach
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.0.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases
-zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.6.2/zwave-js-ui-v9.6.2-linux.zip
+zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.7.1/zwave-js-ui-v9.7.1-linux.zip
