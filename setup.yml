@@ -124,6 +124,12 @@
   roles:
     - sonarr
 
+- hosts: syncthing_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - syncthing
+
 - hosts: syslog_ng_hosts
   gather_facts: yes
   remote_user: root

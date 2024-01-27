@@ -1,0 +1,121 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://syncthing.net/release-key.gpg
+    dest: /usr/share/keyrings/syncthing.key
+  tags:
+    - syncthing
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/syncthing.key] https://apt.syncthing.net/ syncthing stable"
+    state: present
+    filename: syncthing
+  tags:
+    - syncthing
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: syncthing
+    uid: 2000
+    packages:
+      - apt-transport-https
+      - gnupg
+      - nfs-common
+      - rdiff-backup
+      - software-properties-common
+      - xmlstarlet
+  tags:
+    - syncthing
+
+- name: install syncthing
+  ansible.builtin.apt:
+    pkg: syncthing
+  register: syncthing_pkg
+  tags:
+    - syncthing
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - syncthing
+
+- name: Check if the config /home/syncthing/.local/state/syncthing/config.xml exists
+  ansible.builtin.stat:
+    path: /home/syncthing/.local/state/syncthing/config.xml
+  register: syncthing_config
+  tags:
+    - syncthing
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/syncthing/ /home/syncthing/.local/state/syncthing
+  ignore_errors: true
+  when: not syncthing_config.stat.exists
+  tags:
+    - syncthing
+
+- name: Check (again) if the config /home/syncthing/.local/state/syncthing/config.xml exists
+  ansible.builtin.stat:
+    path: /home/syncthing/.local/state/syncthing/config.xml
+  register: syncthing_config
+  tags:
+    - syncthing
+
+- name: Start the service to generate the config if it doesn't exist
+  ansible.builtin.systemd:
+    state: started
+    name: syncthing@syncthing.service
+  when: not syncthing_config.stat.exists
+  tags:
+    - syncthing
+
+- name: Delay to allow the serivce to start
+  ansible.builtin.wait_for:
+    path: /home/syncthing/.local/state/syncthing/config.xml
+  when: not syncthing_config.stat.exists
+  tags:
+    - syncthing
+
+- name: Get the GUI address
+  ansible.builtin.command:
+    cmd: xmlstarlet sel -t -v configuration/gui/address /home/syncthing/.local/state/syncthing/config.xml
+  register: gui_address
+  changed_when: false
+  tags:
+    - syncthing
+
+- name: Update the GUI address
+  ansible.builtin.command:
+    cmd: xmlstarlet ed -L -u configuration/gui/address -v 0.0.0.0:8384 /home/syncthing/.local/state/syncthing/config.xml
+  when: gui_address.stdout == '127.0.0.1:8384'
+  tags:
+    - syncthing
+
+- name: Restart and enable the service
+  ansible.builtin.systemd:
+    state: '{{ syncthing_pkg.changed | ansible.builtin.ternary("restarted", "started") }}'
+    enabled: true
+    name: syncthing@syncthing.service
+  tags:
+    - syncthing
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - syncthing
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: /home/syncthing
+    backup_dest: /backups/syncthing
+  tags:
+    - syncthing

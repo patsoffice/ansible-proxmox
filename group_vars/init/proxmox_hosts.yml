@@ -65,6 +65,23 @@ proxmox_hosts:
         reverse_proxy_service: sonarr
         reverse_proxy_hostname: '{{ sonarr.reverse_proxy_hostname }}'
         service_port: 8989
+      - hostname: '{{ syncthing.hostname }}'
+        vmid: '{{ syncthing.vmid }}'
+        password: '{{ syncthing.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 2048
+        swap: 2048
+        storage: 'local-zfs'
+        rootfs_size: 32
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: syncthing
+        reverse_proxy_service: syncthing
+        reverse_proxy_hostname: '{{ syncthing.reverse_proxy_hostname }}'
+        service_port: 8384
       - hostname: '{{ tautulli.hostname }}'
         vmid: '{{ tautulli.vmid }}'
         password: '{{ tautulli.password }}'
