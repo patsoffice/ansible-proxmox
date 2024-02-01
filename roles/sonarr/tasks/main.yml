@@ -69,7 +69,7 @@
 
 - name: Get Sonarr URL version
   ansible.builtin.set_fact:
-    web_version: "{{ sonarr_master_url | regex_search('main/([\\d.]+)/', '\\1') | first }}"
+    web_version: "{{ sonarr_master_url | regex_search('download/v([\\d.]+)/', '\\1') | first }}"
   tags:
     - sonarr
 
