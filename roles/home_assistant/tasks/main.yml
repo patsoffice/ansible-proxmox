@@ -92,7 +92,7 @@
 
 - name: 'Build python {{ home_assistant_pyenv_version }}'
   ansible.builtin.shell:
-    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv install {{ home_assistant_pyenv_version }} && pyenv global {{ home_assistant_pyenv_version }}'
+    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv install -f {{ home_assistant_pyenv_version }} && pyenv global {{ home_assistant_pyenv_version }}'
     executable: /bin/bash
   become: true
   become_user: home_assistant
@@ -113,7 +113,7 @@
   ansible.builtin.pip:
     name:
       - certbot_dns_duckdns
-      - homeassistant
+      - 'homeassistant=={{ homeassistant_version }}'
       - mysqlclient
       - psycopg2-binary
     state: latest
