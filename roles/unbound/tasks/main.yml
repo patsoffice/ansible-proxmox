@@ -55,7 +55,7 @@
     mode: '0755'
     owner: '{{ unbound_uid }}'
     group: '{{ unbound_gid }}'
-  loop: '{{ unbound_external_domains + unbound_internal_domains }}'
+  loop: '{{ unbound_external_domains + unbound_internal_domains + ["local"] }}'
   tags:
     - dns
     - unbound

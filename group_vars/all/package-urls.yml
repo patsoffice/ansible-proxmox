@@ -8,11 +8,11 @@ caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
 dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.1.5/dnscrypt-proxy-linux_x86_64-2.1.5.tar.gz
 # https://github.com/jgraph/drawio/releases
-drawio_war_url: https://github.com/jgraph/drawio/releases/download/v23.1.5/draw.war
+drawio_war_url: https://github.com/jgraph/drawio/releases/download/v24.1.0/draw.war
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.12.2
 # https://github.com/home-assistant/core/releases
-homeassistant_version: 2024.3.0
+homeassistant_version: 2024.3.3
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.1.7.4030/Lidarr.master.2.1.7.4030.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
@@ -20,7 +20,7 @@ netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/
 # https://github.com/pi-hole/pi-hole/releases
 pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.17.3.tar.gz
 # https://www.openssl.org/source/
-openssl_src_url: https://www.openssl.org/source/openssl-3.1.4.tar.gz
+openssl_src_url: https://www.openssl.org/source/openssl-3.1.5.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.3.6.8612/Radarr.master.5.3.6.8612.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
@@ -33,8 +33,8 @@ tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Server.zip
 # Tomcat versions come from https://tomcat.apache.org/download-90.cgi
-tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.87/bin/apache-tomcat-9.0.87.tar.gz
 # https://github.com/NLnetLabs/unbound/tags
-unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.1.tar.gz
+unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.3.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases
 zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.9.1/zwave-js-ui-v9.9.1-linux.zip
