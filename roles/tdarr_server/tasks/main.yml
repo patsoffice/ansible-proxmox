@@ -149,6 +149,10 @@
   tags:
     - tdarr_server
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - tdarr_server
+
 - import_tasks: reverse_proxy.yml
   tags:
     - tdarr_server

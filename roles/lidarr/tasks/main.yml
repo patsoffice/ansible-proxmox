@@ -121,6 +121,10 @@
   tags:
     - lidarr
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - lidarr
+
 - import_tasks: reverse_proxy.yml
   tags:
     - lidarr

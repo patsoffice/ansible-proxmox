@@ -1,10 +1,32 @@
 ---
-
 - ansible.builtin.include_tasks: generic_redirect.yml
   args:
     apply:
       tags:
         - proxmox_redirects
   loop: '{{ proxmox_reverse_proxy }}'
+  tags:
+    - proxmox_redirects
+
+- ansible.builtin.include_tasks: unbound_external_dns.yml
+  args:
+    apply:
+      tags:
+        - proxmox_redirects
+  # TODO: The task fails if these two variables are set but works if they aren't.
+  # vars:
+  #   inventory_hostname: '{{ proxmox_external_dns.inventory_hostname }}'
+  #   reverse_proxy_hostname: '{{ proxmox_external_dns.reverse_proxy_hostname }}'
+  tags:
+    - proxmox_redirects
+
+- ansible.builtin.include_tasks: unbound_internal_dns.yml
+  args:
+    apply:
+      tags:
+        - proxmox_redirects
+  vars:
+    container_hostname: '{{ proxmox_internal_dns.container_hostname }}'
+    container_ip: '{{ proxmox_internal_dns.container_ip }}'
   tags:
     - proxmox_redirects

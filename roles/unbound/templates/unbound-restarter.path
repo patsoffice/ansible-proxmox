@@ -1,0 +1,9 @@
+[Path]
+Unit=unbound-restarter.service
+{% for domain in unbound_external_domains + unbound_internal_domains %}
+PathChanged=/opt/unbound/etc/unbound/conf.d/{{ domain }}
+PathChanged=/opt/unbound/etc/unbound/conf.d/{{ domain }}.conf
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target

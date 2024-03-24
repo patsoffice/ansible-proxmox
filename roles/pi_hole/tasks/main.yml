@@ -112,6 +112,11 @@
     - dns
     - pihole
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - dns
+    - pihole
+
 - import_tasks: reverse_proxy.yml
   tags:
     - dns

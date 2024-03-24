@@ -81,6 +81,10 @@
   tags:
     - node_red
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - node_red
+
 - import_tasks: reverse_proxy.yml
   tags:
     - node_red

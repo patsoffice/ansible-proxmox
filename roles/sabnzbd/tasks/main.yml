@@ -125,6 +125,10 @@
   tags:
     - sabnzbd
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - sabnzbd
+
 - import_tasks: reverse_proxy.yml
   tags:
     - sabnzbd

@@ -82,6 +82,10 @@
   tags:
     - plex
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - plex
+
 - import_tasks: reverse_proxy.yml
   tags:
     - plex

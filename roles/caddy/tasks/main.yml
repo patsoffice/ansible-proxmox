@@ -164,7 +164,6 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'caddy-restarter.service'
-    state: "started"
   tags:
     - caddy
 

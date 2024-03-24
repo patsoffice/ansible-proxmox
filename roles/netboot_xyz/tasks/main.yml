@@ -113,6 +113,10 @@
   tags:
     - netboot_xyz
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - netboot_xyz
+
 - import_tasks: reverse_proxy.yml
   tags:
     - netboot_xyz

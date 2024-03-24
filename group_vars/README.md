@@ -90,28 +90,42 @@ networking_default_gateway: 192.168.0.1
 
 The `package-urls.yml` variables have links to packages that roles will use to install them in containers.
 
-## all/traefik.yml
+## all/redirects.yml
 
-The `traefik.yml` variables have information about the traefik instance that is used as a reverse proxy. A file is created on the remote server configuring the reverse proxy. The following keys are required:
-
-```yaml
-traefik_host: '192.168.1.5'
-traefik_user: remote_user
-traefik_config_path: /config/traefik/config.d
-```
-
-## all/vacuum_redirects.yml
-
-The `vacuum_redirects.yml` variables have information so that Traefik is used as a reverse proxy for vacuums running Valetudo. The following keys are required:
+The `redirects.yml` variables have information so that reverse proxy and DNS entries are set up for devices that are not Proxmox hosts nor LXC containers. The following keys are required:
 
 ```yaml
-vacuum_redirects:
+generic_host_redirects:
   - service: 'downstairs_vacuum'
     lb_url: 'http://10.13.5.1'
     reverse_proxy_hostname: 'downstairs-vacuum.domain.com'
   - service: 'upstairs_vacuum'
     lb_url: 'http://10.13.5.2'
     reverse_proxy_hostname: 'upstairs-vacuum.domain.com'
+
+generic_host_dns:
+  - shortname: downstairs-vacuum
+    reverse_proxy_ip_address: 10.10.5.0
+    internal_ip_address: 10.13.5.1
+  - shortname: upstairs-vacuum
+    reverse_proxy_ip_address: 10.10.5.0
+    internal_ip_address: 10.13.5.2
+```
+
+## all/unbound.yml
+
+The `unbound.yml` variables have information about the local domains hosted and where they stored. Unfortunately, we need to specify the hosts where DNS is running rather than just using the dns_hosts group.
+
+```yaml
+unbound_user: root
+unbound_config_path: /opt/unbound/etc/unbound/conf.d
+unbound_external_domains:
+  - domain.com
+unbound_internal_domains:
+  - int.domain.com
+unbound_hosts:
+  - 192.168.0.100
+  - 192.168.0.101
 ```
 
 ## init/proxmox_hosts.yml

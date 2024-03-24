@@ -5,6 +5,24 @@
     apply:
       tags:
         - generic_redirects
-  loop: '{{ vacuum_redirects }}'
+  loop: '{{ generic_host_redirects }}'
+  tags:
+    - generic_redirects
+
+- ansible.builtin.include_tasks: unbound_external_dns.yml
+  vars:
+    inventory_hostname: '{{ item.reverse_proxy_ip_address }}'
+    reverse_proxy_hostname: '{{ item.shortname }}.{{ unbound_external_domains[0] }}'
+  when: item.reverse_proxy_ip_address is defined
+  loop: '{{ generic_host_dns }}'
+  tags:
+    - generic_redirects
+
+- ansible.builtin.include_tasks: unbound_internal_dns.yml
+  vars:
+    container_hostname: '{{ item.shortname }}.{{ unbound_internal_domains[0] }}'
+    container_ip: '{{ item.internal_ip_address }}'
+  when: item.internal_ip_address is defined
+  loop: '{{ generic_host_dns }}'
   tags:
     - generic_redirects

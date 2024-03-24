@@ -97,6 +97,12 @@
   tags:
     - containers
 
+- import_tasks: unbound_internal_dns.yml
+  vars:
+    container_hostname: '{{ item.hostname }}'
+  tags:
+    - containers
+
 - name: Add hosts to {{ item.config_task | default('config_task') }} group and inject needed role variables
   ansible.builtin.add_host:
     name: '{{ container_ip }}'

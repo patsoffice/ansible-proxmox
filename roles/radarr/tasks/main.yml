@@ -118,6 +118,10 @@
   tags:
     - radarr
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - radarr
+
 - import_tasks: reverse_proxy.yml
   tags:
     - radarr

@@ -146,6 +146,10 @@
   tags:
     - sonarr
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - sonarr
+
 - import_tasks: reverse_proxy.yml
   tags:
     - sonarr

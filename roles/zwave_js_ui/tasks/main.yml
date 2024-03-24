@@ -105,6 +105,10 @@
   tags:
     - zwave_js_ui
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - zwave_js_ui
+
 - import_tasks: reverse_proxy.yml
   tags:
     - zwave_js_ui

@@ -1,5 +1,5 @@
 ---
-- name: 'Store traefik info for {{ item.service }}'
+- name: 'Store caddy info for {{ item.service }}'
   ansible.builtin.set_fact:
     reverse_proxy_hostname: '{{ item.reverse_proxy_hostname }}'
     caddy_service: '{{ item.service }}'

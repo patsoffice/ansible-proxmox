@@ -1,0 +1,21 @@
+---
+- name: 'store unbound external DNS info for {{ reverse_proxy_hostname }}'
+  ansible.builtin.set_fact:
+    unbound_ip_address: '{{ caddy_host }}'
+    unbound_fqdn: '{{ reverse_proxy_hostname | default(omit) }}'
+    unbound_domain: '{{ reverse_proxy_hostname.split(".", 1) [1] | default(omit) }}'
+
+- name: copy the unbound external zone file entry
+  template:
+    src: 'unbound-external-dns.conf'
+    dest: '{{ unbound_config_path }}/{{ unbound_domain }}/{{ unbound_fqdn }}.conf'
+    mode: 0644
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  delegate_to: '{{ unbound_host_ip }}'
+  remote_user: '{{ unbound_user }}'
+  become: true
+  loop: '{{ unbound_hosts }}'
+  loop_control:
+    loop_var: unbound_host_ip
+  when: unbound_fqdn is defined

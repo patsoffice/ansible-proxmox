@@ -48,6 +48,18 @@
     - dns
     - unbound
 
+- name: Create zone file directories
+  ansible.builtin.file:
+    path: '/opt/unbound/etc/unbound/conf.d/{{ item }}'
+    state: directory
+    mode: '0755'
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  loop: '{{ unbound_external_domains + unbound_internal_domains }}'
+  tags:
+    - dns
+    - unbound
+
 - name: Get OpenSSL URL version
   ansible.builtin.set_fact:
     web_version: "{{ openssl_src_url | regex_search('/openssl-([\\d.]+).tar.gz$', '\\1') | first }}"
@@ -219,26 +231,37 @@
     - dns
     - unbound
 
-# - name: copy the zone files
-#   ansible.builtin.copy:
-#     src: '{{ item }}'
-#     dest: '/opt/unbound/etc/unbound/conf.d/{{ item }}'
-#     mode: 0644
-#     owner: '{{ unbound_uid }}'
-#     group: '{{ unbound_gid }}'
-#   loop:
-#     - local.conf
-#     - chezlawrence.com.conf
-#     - int.chezlawrence.com.conf
-#   register: zone_files
-#   tags:
-#     - dns
-#     - unbound
+- name: copy the zone files
+  ansible.builtin.template:
+    src: unbound-zone.conf
+    dest: '/opt/unbound/etc/unbound/conf.d/{{ item }}.conf'
+    mode: 0644
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  loop: '{{ unbound_external_domains + unbound_internal_domains + ["local"] }}'
+  tags:
+    - dns
+    - unbound
 
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'unbound.service'
-    state: '{{ (web_version != file_version.stdout or zone_files.changed) | ternary("restarted", "started") }}'
+    state: '{{ (web_version != file_version.stdout) | ternary("restarted", "started") }}'
+  tags:
+    - dns
+    - unbound
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'unbound-restarter.service'
+  tags:
+    - dns
+    - unbound
+
+- import_tasks: systemd_unit_template.yml
+  vars:
+    systemd_unit: 'unbound-restarter.path'
+    state: "started"
   tags:
     - dns
     - unbound

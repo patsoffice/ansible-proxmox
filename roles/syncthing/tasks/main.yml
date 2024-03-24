@@ -109,6 +109,10 @@
   tags:
     - syncthing
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - syncthing
+
 - import_tasks: reverse_proxy.yml
   tags:
     - syncthing

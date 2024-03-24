@@ -16,7 +16,7 @@
   tags:
     - host_manager
 
-- name: Add hosts to proxmox_hosts group and inject needed role variables
+- name: add hosts to proxmox_hosts group and inject needed role variables
   ansible.builtin.add_host:
     name: '{{ proxmox_hosts[item].api_host }}'
     groups: proxmox_hosts
@@ -31,6 +31,12 @@
       - service: '{{ item }}'
         reverse_proxy_hostname: '{{ item }}.{{ caddy_domain }}'
         lb_url: 'https://{{ proxmox_hosts[item].api_host }}:8006'
+    proxmox_external_dns:
+      reverse_proxy_hostname: '{{ item }}.{{ unbound_external_domains[0] }}'
+      inventory_hostname: '{{ proxmox_hosts[item].api_host }}'
+    proxmox_internal_dns:
+      container_hostname: '{{ item }}.{{ unbound_internal_domains[0] }}'
+      container_ip: '{{ proxmox_hosts[item].api_host }}'
   loop: '{{ host_keys }}'
   no_log: true
   changed_when: false

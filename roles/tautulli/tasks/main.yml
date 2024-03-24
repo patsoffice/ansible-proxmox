@@ -126,6 +126,10 @@
   tags:
     - tautulli
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - tautulli
+
 - import_tasks: reverse_proxy.yml
   tags:
     - tautulli

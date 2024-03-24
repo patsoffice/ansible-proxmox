@@ -73,6 +73,10 @@
   tags:
     - esphome
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - esphome
+
 - import_tasks: reverse_proxy.yml
   tags:
     - esphome

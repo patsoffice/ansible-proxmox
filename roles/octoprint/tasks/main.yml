@@ -82,6 +82,10 @@
   tags:
     - octoprint
 
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - octoprint
+
 - import_tasks: reverse_proxy.yml
   tags:
     - octoprint
