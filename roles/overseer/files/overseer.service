@@ -1,0 +1,16 @@
+[Unit]
+Description=Overseer
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/bin/yarn start
+Restart=on-failure
+KillSignal=SIGINT
+
+SyslogIdentifier=overseer
+StandardOutput=syslog
+
+WorkingDirectory=/opt/overseer
+
+[Install]
+WantedBy=multi-user.target

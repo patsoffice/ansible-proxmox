@@ -1,0 +1,174 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+  tags:
+    - overseer
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/nodesource.asc] https://deb.nodesource.com/node_20.x nodistro main"
+    state: present
+    filename: nodesource
+  tags:
+    - overseer
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    shell: /usr/sbin/nologin
+    packages:
+      - apt-transport-https
+      - build-essential
+      - gnupg
+      - nodejs
+      - nfs-common
+      - python3
+      - rdiff-backup
+      - software-properties-common
+  tags:
+    - overseer
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    appdirs:
+      - path: /opt
+        owner: root
+        group: root
+      - path: /opt/overseer
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - overseer
+
+- name: Install yarn package.
+  community.general.npm:
+    name: yarn
+    global: true
+  tags:
+    - overseer
+
+- name: Get overseer URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ overseer_src_url | regex_search('/v([\\d.]+).tar.gz', '\\1') | first }}"
+  tags:
+    - overseer
+
+- name: Check that /opt/overseer/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/overseer/version.txt
+  register: version_txt
+  tags:
+    - overseer
+
+- name: Get the installed version
+  command: cat /opt/overseer/version.txt
+  register: version_txt_cmd
+  when: version_txt.stat.exists
+  changed_when: false
+  tags:
+    - overseer
+
+- name: Set the overseer file version
+  ansible.builtin.set_fact:
+    installed_version: '{{ version_txt_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - overseer
+
+- name: Download latest overseer
+  ansible.builtin.get_url:
+    url: '{{ overseer_src_url }}'
+    dest: /opt/overseer.tar.gz
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Extract the overseer tarball
+  ansible.builtin.unarchive:
+    src: /opt/overseer.tar.gz
+    dest: /opt/overseer
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/overseer.tar.gz
+    state: absent
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Install overseer dependencies
+  ansible.builtin.command:
+    cmd: yarn install
+  args:
+    chdir: /opt/overseer
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Build overseer
+  ansible.builtin.command:
+    cmd: yarn build
+  args:
+    chdir: /opt/overseer
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Set the overseer version.txt file
+  ansible.builtin.template:
+    src: version.txt
+    dest: /opt/overseer/version.txt
+    mode: 0644
+    owner: root
+    group: root
+  when: web_version != installed_version
+  tags:
+    - overseer
+
+- name: Check that /config/settings.js exists
+  ansible.builtin.stat:
+    path: /opt/overseer/config/settings.json
+  register: settings_json
+  tags:
+    - overseer
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup -r now --force /backups/overseer/ /opt/overseer/config
+  ignore_errors: true
+  when: not settings_json.stat.exists
+  tags:
+    - overseer
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'overseer.service'
+    state: '{{ (web_version != installed_version) | ternary("restarted", "started") }}'
+  tags:
+    - overseer
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - overseer
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - overseer
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: '/opt/overseer/config'
+    backup_dest: '/backups/overseer'
+  tags:
+    - overseer

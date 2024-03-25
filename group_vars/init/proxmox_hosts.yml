@@ -348,6 +348,23 @@ proxmox_hosts:
         reverse_proxy_service: octoprint
         reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
         service_port: 5000
+      - hostname: '{{ overseer.hostname }}'
+        vmid: '{{ overseer.vmid }}'
+        password: '{{ overseer.password }}'
+        unprivileged: false
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 2
+        memory: 2048
+        swap: 2048
+        storage: 'local-zfs'
+        rootfs_size: 8
+        features:
+          - 'nesting=1'
+        proxmox_default_behavior: compatibility
+        config_task: overseer
+        reverse_proxy_service: overseer
+        reverse_proxy_hostname: '{{ overseer.reverse_proxy_hostname }}'
+        service_port: 5055
       - hostname: '{{ sabnzbd.hostname }}'
         vmid: '{{ sabnzbd.vmid }}'
         password: '{{ sabnzbd.password }}'
