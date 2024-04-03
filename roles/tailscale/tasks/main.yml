@@ -1,0 +1,59 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+  tags:
+    - tailscale
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu jammy main"
+    state: present
+    filename: tailscale.list
+  tags:
+    - tailscale
+
+- name: Check that /var/lib/tailscale/tailscaled.state exists
+  ansible.builtin.stat:
+    path: /var/lib/tailscale/tailscaled.state
+  register: tailscaled_state
+  tags:
+    - tailscale
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: 'rdiff-backup -r now --force /backups/{{ container_hostname}}/ /var/lib/tailscale'
+  ignore_errors: true
+  when: not tailscaled_state.stat.exists
+  tags:
+    - tailscale
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - apt-transport-https
+      - gnupg
+      - nfs-common
+      - rdiff-backup
+      - tailscale
+      - software-properties-common
+  tags:
+    - tailscale
+
+- import_tasks: appdir_and_mountpoints.yml
+  vars:
+    mountpoints:
+      - src: '{{ backup_host }}:{{ backup_path }}'
+        dest: /backups
+        owner: '{{ backup_owner }}'
+        group: '{{ backup_group }}'
+  tags:
+    - tailscale
+
+- import_tasks: backup.yml
+  vars:
+    backup_src: '/var/lib/grafana'
+    backup_dest: '/backups/{{ container_hostname}}'
+  tags:
+    - tailscale

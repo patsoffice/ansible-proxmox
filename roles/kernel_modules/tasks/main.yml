@@ -1,0 +1,7 @@
+- name: Add the tun module and make sure it is loaded after reboots
+  community.general.modprobe:
+    name: tun
+    state: present
+    persistent: present
+  tags:
+    - kernel_modules

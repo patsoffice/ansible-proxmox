@@ -8,6 +8,7 @@
   gather_facts: yes
   remote_user: root
   roles:
+    - kernel_modules
     - apt
     - zfs_features
     - cpufreq
@@ -141,6 +142,12 @@
   remote_user: root
   roles:
     - syslog_ng
+
+- hosts: tailscale_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - tailscale
 
 - hosts: tautulli_hosts
   gather_facts: yes

@@ -7,6 +7,24 @@ proxmox_hosts:
     zfs_pools:
       - rpool
       - tank
+    containers:
+      - hostname: '{{ tailscale001.hostname }}'
+        vmid: '{{ tailscale001.vmid }}'
+        password: '{{ tailscale001.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
+          - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
+        config_task: tailscale
   pve002:
     api_host: '{{ pve002.api_host }}'
     api_user: '{{ pve002.api_user }}'
@@ -82,6 +100,23 @@ proxmox_hosts:
         reverse_proxy_service: syncthing
         reverse_proxy_hostname: '{{ syncthing.reverse_proxy_hostname }}'
         service_port: 8384
+      - hostname: '{{ tailscale002.hostname }}'
+        vmid: '{{ tailscale002.vmid }}'
+        password: '{{ tailscale002.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
+          - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
+        config_task: tailscale
       - hostname: '{{ tautulli.hostname }}'
         vmid: '{{ tautulli.vmid }}'
         password: '{{ tautulli.password }}'
@@ -135,13 +170,6 @@ proxmox_hosts:
         reverse_proxy_service: transmission
         reverse_proxy_hostname: '{{ transmission.reverse_proxy_hostname }}'
         service_port: 9091
-  pve004:
-    api_host: '{{ pve004.api_host }}'
-    api_user: '{{ pve004.api_user }}'
-    api_password: '{{ pve004.api_password }}'
-    zfs_pools:
-      - rpool
-      - tank
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
@@ -250,6 +278,23 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: syslog_ng
+      - hostname: '{{ tailscale005.hostname }}'
+        vmid: '{{ tailscale005.vmid }}'
+        password: '{{ tailscale005.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
+          - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
+        config_task: tailscale
       - hostname: '{{ tdarr_node.hostname }}'
         vmid: '{{ tdarr_node.vmid }}'
         password: '{{ tdarr_node.password }}'
@@ -465,6 +510,23 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: redis
+      - hostname: '{{ tailscale006.hostname }}'
+        vmid: '{{ tailscale006.vmid }}'
+        password: '{{ tailscale006.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
+          - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
+        config_task: tailscale
       - hostname: '{{ zwave_js_ui.hostname }}'
         vmid: '{{ zwave_js_ui.vmid }}'
         password: '{{ zwave_js_ui.password }}'
