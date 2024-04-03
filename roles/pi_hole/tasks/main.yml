@@ -8,6 +8,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - import_tasks: appdir_and_mountpoints.yml
   vars:
@@ -19,6 +20,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Get pi-hole URL version
   ansible.builtin.set_fact:
@@ -26,6 +28,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Check that /opt/pihole/version.sh exists
   ansible.builtin.stat:
@@ -34,6 +37,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Get the installed pi-hole version
   ansible.builtin.shell:
@@ -44,6 +48,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: copy the setupVars config
   template:
@@ -56,6 +61,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Set a default pi-hole file version
   ansible.builtin.set_fact:
@@ -65,6 +71,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Download latest pi-hole
   ansible.builtin.get_url:
@@ -74,6 +81,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Extract the pi-hole tarball
   ansible.builtin.unarchive:
@@ -84,6 +92,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Remove the pi-hole tarball
   ansible.builtin.file:
@@ -93,6 +102,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Build pi-hole
   ansible.builtin.shell:
@@ -102,6 +112,7 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - name: Remove the pi-hole build directory
   ansible.builtin.file:
@@ -111,13 +122,16 @@
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - import_tasks: unbound_external_dns.yml
   tags:
     - dns
     - pihole
+    - pi_hole
 
 - import_tasks: reverse_proxy.yml
   tags:
     - dns
     - pihole
+    - pi_hole
