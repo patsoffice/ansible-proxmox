@@ -1,0 +1,56 @@
+- import_tasks: centos_setup.yml
+  vars:
+    packages:
+      - ipa-client
+      - ipa-server
+  tags:
+    - idm_replica
+
+- name: check if the client is already configured
+  ansible.builtin.stat:
+    path: /var/lib/ipa-client/sysrestore/sysrestore.state
+  register: sysrestore_state
+  tags:
+    - idm_replica
+
+- name: unattended install of FreeIPA client
+  ansible.builtin.command:
+    argv:
+      - ipa-client-install
+      - "--principal={{ idm_admin_principal }}"
+      - "--password={{ idm_admin_password }}"
+      - --no-ntp
+      - --unattended
+  when: not sysrestore_state.stat.exists
+  tags:
+    - idm_replica
+
+- name: add '{{ container_hostname }}' to the ipaservers hostgroup
+  community.general.ipa_hostgroup:
+    name: ipaservers
+    append: true
+    host:
+      - '{{ container_hostname }}'
+    ipa_host: '{{ idm_server_name }}'
+    ipa_user: '{{ idm_admin_principal }}'
+    ipa_pass: '{{ idm_admin_password }}'
+  tags:
+    - idm_replica
+
+- name: check if the replica is already configured
+  ansible.builtin.stat:
+    path: /var/lib/ipa/sysrestore/sysrestore.state
+  register: replica_sysrestore_state
+  tags:
+    - idm_replica
+
+- name: unattended install of FreeIPA client
+  ansible.builtin.command:
+    argv:
+      - ipa-replica-install
+      - --no-ntp
+      - --setup-ca
+      - --unattended
+  when: not replica_sysrestore_state.stat.exists
+  tags:
+    - idm_replica

@@ -1,0 +1,44 @@
+---
+- name: check if the client is already configured
+  ansible.builtin.stat:
+    path: /var/lib/ipa-client/sysrestore/sysrestore.state
+  register: sysrestore_state
+
+- name: unattended install of FreeIPA client
+  ansible.builtin.command:
+    argv:
+      - ipa-client-install
+      - "--principal={{ idm_admin_principal }}"
+      - "--password={{ idm_admin_password }}"
+      - --no-ntp
+      - --unattended
+  when: not sysrestore_state.stat.exists
+
+- name: set dns_canonicalize_hostname to true to ensure correct host naming for kinit
+  community.general.ini_file:
+    path: /etc/krb5.conf
+    section: libdefaults
+    option: dns_canonicalize_hostname
+    value: true
+
+- name: create the user
+  community.general.ipa_user:
+    name: '{{ username }}'
+    givenname: '{{ username }}'
+    sn: '{{ username }}'
+    state: present
+    password: '{{ password | default(omit) }}'
+    ipa_host: '{{ idm_server_name }}'
+    ipa_user: '{{ idm_admin_principal }}'
+    ipa_pass: '{{ idm_admin_password }}'
+    update_password: on_create
+  when: username is defined
+
+- name: create the group and add user
+  community.general.ipa_group:
+    name: '{{ groupname }}'
+    user: '{{ [username] | default(omit) }}'
+    ipa_host: '{{ idm_server_name }}'
+    ipa_user: '{{ idm_admin_principal }}'
+    ipa_pass: '{{ idm_admin_password }}'
+  when: groupname is defined

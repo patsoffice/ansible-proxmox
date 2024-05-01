@@ -65,6 +65,18 @@
   roles:
     - grafana
 
+- hosts: idm_server_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - idm_server
+
+- hosts: idm_replica_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - idm_replica
+
 - hosts: lidarr_hosts
   gather_facts: yes
   remote_user: root

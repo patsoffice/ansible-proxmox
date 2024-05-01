@@ -1,0 +1,22 @@
+---
+- name: ensure service is present
+  community.general.ipa_service:
+    name: '{{ service_principal_name }}'
+    state: present
+    ipa_host: '{{ idm_server_name }}'
+    ipa_user: '{{ idm_admin_principal }}'
+    ipa_pass: '{{ idm_admin_password }}'
+
+- name: get existing service principals
+  ansible.builtin.command: klist -kt
+  register: principals
+  changed_when: false
+
+- name: get keytab and add it to /etc/krb5.keytab
+  ansible.builtin.shell: |
+    kinit -kt /etc/krb5.keytab
+    ipa-getkeytab -p {{ service_principal_name }} -k /etc/krb5.keytab
+    kdestroy
+  register: result
+  failed_when: result.failed or "Failed" in result.stderr
+  when: service_principal_name not in principals.stdout

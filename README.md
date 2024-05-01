@@ -21,3 +21,16 @@ To run a task involving a container, the `containers` tag is required:
 ```sh
 ./setup.sh --tags host_manager,containers,netboot_xyz
 ```
+
+For CentOS containers, unfortunately, a manual step need to happen before the container can be configured. CentOS containers do not start sshd. To remedy this, do the following:
+
+```sh
+# On the proxmox host, console into the container where XXX is the vm_id
+pct console XXX
+# After you log in, run the following:
+dnf install -y openssh-server
+cat << EOF > /etc/ssh/sshd_config.d/60-root-login
+PermitRootLogin prohibit-password
+EOF
+systemctl enable --now sshd.service
+```

@@ -1,0 +1,15 @@
+---
+- name: create an internal DNS zone file
+  copy:
+    content: '{{ file_content }}'
+    dest: '{{ unbound_config_path }}/{{ unbound_internal_domains[0] }}/{{ file_name }}.conf'
+    mode: 0644
+    owner: '{{ unbound_uid }}'
+    group: '{{ unbound_gid }}'
+  delegate_to: '{{ unbound_host_ip }}'
+  remote_user: '{{ unbound_user }}'
+  become: true
+  loop: '{{ unbound_hosts }}'
+  loop_control:
+    loop_var: unbound_host_ip
+  when: file_content is defined and file_name is defined

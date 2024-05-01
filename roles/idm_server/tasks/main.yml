@@ -1,0 +1,73 @@
+- import_tasks: centos_setup.yml
+  vars:
+    packages:
+      - ipa-server
+  tags:
+    - idm_server
+
+- name: check if the server is already configured
+  ansible.builtin.stat:
+    path: /etc/ipa/default.conf
+  register: default_conf
+  tags:
+    - idm_server
+
+- name: unattended install of FreeIPA server
+  ansible.builtin.command:
+    argv:
+      - ipa-server-install
+      - "--ds-password={{ idm_directory_manager_password }}"
+      - "--admin-password={{ idm_admin_password }}"
+      - "--domain={{ idm_domain }}"
+      - "--realm={{ idm_realm }}"
+      - "--hostname={{ container_hostname }}"
+      - "--netbios-name={{ idm_netbios_name }}"
+      - --no-ntp
+      - --unattended
+  when: not default_conf.stat.exists
+  tags:
+    - idm_server
+
+- name: get kerberos credentials
+  ansible.builtin.shell:
+    cmd: '{{ krb5_init }}'
+  changed_when: false
+  when: krb5_init is defined
+  tags:
+    - idm_server
+
+- name: generate IDM zone file contents
+  ansible.builtin.shell:
+    cmd: |
+      ipa dns-update-system-records --dry-run | grep -v -e "IPA DNS" -e '^$' | sed 's/"//g' | sed 's/^[ \t]*//' | awk '{print "local-data: \"" $0 "\""}'
+  register: dns_update_system_records
+  changed_when: false
+  when: krb5_init is defined
+  tags:
+    - idm_server
+
+- name: destroy kerberos credentials
+  ansible.builtin.shell:
+    cmd: '{{ krb5_destroy }}'
+  changed_when: false
+  when: krb5_init is defined and krb5_destroy is defined
+  tags:
+    - idm_server
+
+- import_tasks: dns_internal_file.yml
+  vars:
+    file_content: '{{ dns_update_system_records.stdout }}'
+    file_name: 'idm_srv'
+  when: dns_update_system_records is defined
+  tags:
+    - idm_server
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - idm_server
+
+- import_tasks: reverse_proxy.yml
+  vars:
+    reverse_proxy_url_prefix: https
+  tags:
+    - idm_server

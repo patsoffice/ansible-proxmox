@@ -91,7 +91,7 @@ proxmox_hosts:
         memory: 2048
         swap: 2048
         storage: 'local-zfs'
-        rootfs_size: 32
+        rootfs_size: 64
         features:
           - 'nesting=1'
           - 'mount=nfs'
@@ -170,6 +170,24 @@ proxmox_hosts:
         reverse_proxy_service: transmission
         reverse_proxy_hostname: '{{ transmission.reverse_proxy_hostname }}'
         service_port: 9091
+      - hostname: '{{ idm0.hostname }}'
+        vmid: '{{ idm0.vmid }}'
+        password: '{{ idm0.password }}'
+        container_ip: '{{ idm0.container_ip }}'
+        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        cores: 1
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: idm_server
+        reverse_proxy_service: idm0
+        reverse_proxy_hostname: '{{ idm0.reverse_proxy_hostname }}'
+        service_port: 443
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
@@ -479,6 +497,21 @@ proxmox_hosts:
         reverse_proxy_service: grafana
         reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
         service_port: 3000
+      - hostname: '{{ idm1.hostname }}'
+        vmid: '{{ idm1.vmid }}'
+        password: '{{ idm1.password }}'
+        container_ip: '{{ idm1.container_ip }}'
+        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        cores: 1
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: idm_replica
       - hostname: '{{ node_red.hostname }}'
         vmid: '{{ node_red.vmid }}'
         password: '{{ node_red.password }}'
