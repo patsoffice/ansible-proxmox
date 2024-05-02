@@ -188,6 +188,12 @@ proxmox_hosts:
         reverse_proxy_service: idm0
         reverse_proxy_hostname: '{{ idm0.reverse_proxy_hostname }}'
         service_port: 443
+  pve003:
+    api_host: '{{ pve003.api_host }}'
+    api_user: '{{ pve003.api_user }}'
+    api_password: '{{ pve003.api_password }}'
+    zfs_pools:
+      - rpool
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
