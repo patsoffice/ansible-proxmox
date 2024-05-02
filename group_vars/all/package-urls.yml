@@ -24,11 +24,11 @@ pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.2.tar
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.5.tar.gz
 # https://github.com/Radarr/Radarr/releases
-radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.3.6.8612/Radarr.master.5.3.6.8612.linux-core-x64.tar.gz
+radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.4.6.8723/Radarr.master.5.4.6.8723.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.2.3/SABnzbd-4.2.3-src.tar.gz
 # https://github.com/Sonarr/Sonarr/releases
-sonarr_master_url: https://github.com/Sonarr/Sonarr/releases/download/v4.0.3.1413/Sonarr.main.4.0.3.1413.linux-x64.tar.gz
+sonarr_master_url: https://github.com/Sonarr/Sonarr/releases/download/v4.0.4.1491/Sonarr.main.4.0.4.1491.linux-x64.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.13.4.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
@@ -39,4 +39,4 @@ tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.87/bin/apach
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.19.3.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases
-zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.9.1/zwave-js-ui-v9.9.1-linux.zip
+zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.12.0/zwave-js-ui-v9.12.0-linux.zip
