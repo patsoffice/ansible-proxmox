@@ -142,6 +142,12 @@ proxmox_hosts:
     zfs_pools:
       - rpool
       - tank
+    zfs_options:
+      tank:
+        acltype: posix
+        compression: lz4
+        dnodesize: auto
+        xattr: sa
   pve002:
     api_host: '10.101.1.2'
     api_user: 'root@pam'

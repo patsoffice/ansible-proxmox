@@ -7,3 +7,12 @@
   with_items: '{{ proxmox_zfs_pools }}'
   tags:
     - zfs_features
+
+- name: Set any additional ZFS filesystems
+  community.general.zfs:
+    name: '{{ item.key }}'
+    state: present
+    extra_zfs_properties: '{{ item.value }}'
+  with_items: '{{ proxmox_zfs_options | dict2items }}'
+  tags:
+    - zfs_features

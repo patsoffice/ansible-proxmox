@@ -25,6 +25,7 @@
     proxmox_api_user: '{{ proxmox_hosts[item].api_user }}'
     proxmox_api_password: '{{ proxmox_hosts[item].api_password }}'
     proxmox_zfs_pools: '{{ proxmox_hosts[item].zfs_pools }}'
+    proxmox_zfs_options: '{{ proxmox_hosts[item].zfs_options | default({}) }}'
     proxmox_containers: '{{ proxmox_hosts[item].containers if proxmox_hosts[item].containers is defined }}'
     proxmox_udev_rules: '{{ proxmox_hosts[item].udev_rules | default({}) }}'
     proxmox_reverse_proxy:
