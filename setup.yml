@@ -89,6 +89,12 @@
   roles:
     - mqtt
 
+- hosts: nas_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - nas
+
 - hosts: netboot_xyz_hosts
   gather_facts: yes
   remote_user: root

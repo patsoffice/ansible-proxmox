@@ -8,6 +8,26 @@ proxmox_hosts:
       - rpool
       - tank
     containers:
+      - hostname: '{{ nas0.hostname }}'
+        vmid: '{{ nas0.vmid }}'
+        container_ip: '{{ nas0.container_ip }}'
+        password: '{{ nas0.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 4
+        memory: 8192
+        swap: 16384
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.mount.entry: /tank tank/ none rbind,create=dir,optional 0 0'
+        config_task: nas
+        reverse_proxy_service: nas0
+        reverse_proxy_hostname: '{{ nas0.reverse_proxy_hostname }}'
+        service_port: 9090
       - hostname: '{{ tailscale001.hostname }}'
         vmid: '{{ tailscale001.vmid }}'
         password: '{{ tailscale001.password }}'

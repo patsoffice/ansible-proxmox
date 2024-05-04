@@ -1,0 +1,128 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - acl
+      - avahi-daemon
+      - freeipa-client
+      - nfs-common
+      - nfs-kernel-server
+      - samba
+  tags:
+    - nas
+
+- import_tasks: idm_client_setup.yml
+  tags:
+    - nas
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - nas
+
+- name: mask unneeded NFSv3 services
+  ansible.builtin.systemd_service:
+    name: '{{ item }}'
+    enabled: false
+    state: stopped
+    masked: yes
+  loop:
+    - rpc-statd.service
+    - rpcbind.service
+    - rpcbind.socket
+  tags:
+    - nas
+
+- name: populate exports
+  template:
+    src: exports
+    dest: /etc/exports
+    mode: 0644
+    owner: root
+    group: root
+  register: exports
+  tags:
+    - nas
+
+- name: refresh exports
+  command: exportfs -rav
+  when: exports.changed
+  tags:
+    - nas
+
+- name: set nfsd options
+  community.general.ini_file:
+    path: /etc/nfs.conf
+    section: nfsd
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - option: udp
+      value: 'n'
+    - option: tcp
+      value: 'y'
+    - option: vers2
+      value: 'n'
+    - option: vers3
+      value: 'n'
+    - option: vers4
+      value: 'y'
+    - option: vers4.0
+      value: 'y'
+    - option: vers4.1
+      value: 'y'
+    - option: vers4.2
+      value: 'y'
+  register: nfs_conf
+  tags:
+    - nas
+
+- name: restart nfsd
+  ansible.builtin.systemd_service:
+    name: nfs-kernel-server.service
+    enabled: true
+    state: restarted
+  when: nfs_conf.changed
+  tags:
+    - nas
+
+- name: populate smbd.conf
+  template:
+    src: smb.conf
+    dest: /etc/samba/smb.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: smb_conf
+  tags:
+    - nas
+
+- name: refresh smbd.conf
+  ansible.builtin.systemd_service:
+    name: smbd.service
+    enabled: true
+    state: restarted
+  when: smb_conf.changed
+  tags:
+    - nas
+
+- name: populate avahi samba service
+  template:
+    src: samba.service
+    dest: /etc/avahi/services/samba.service
+    mode: 0644
+    owner: root
+    group: root
+  register: samba_service
+  tags:
+    - nas
+
+- name: refresh avahi samba.service
+  ansible.builtin.systemd_service:
+    name: avahi-daemon.service
+    enabled: true
+    state: restarted
+  when: samba_service.changed
+  tags:
+    - nas
