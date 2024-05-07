@@ -1,0 +1,50 @@
+---
+- name: make sure /etc/security/keytabs exists
+  ansible.builtin.file:
+    path: /etc/security/keytabs
+    state: directory
+    owner: root
+    group: root
+    mode: '755'
+
+- name: check if the user keytab exists
+  ansible.builtin.stat:
+    path: '/etc/security/keytabs/{{ username }}.keytab'
+  register: user_keytab
+
+- name: get the user keytab
+  ansible.builtin.shell: |
+    echo '{{ idm_admin_password }}' | kinit admin
+    ipa-getkeytab -p {{ username }} -k /etc/security/keytabs/{{ username }}.keytab
+    kdestroy -A
+  when: not user_keytab.stat.exists
+
+- name: make sure the user keytab is secure
+  ansible.builtin.file:
+    path: '/etc/security/keytabs/{{ username }}.keytab'
+    state: file
+    owner: '{{ username }}'
+    group: '{{ groupname }}'
+    mode: '600'
+
+- name: get uid of {{ username }}
+  ansible.builtin.command: 'id -u {{ username }}'
+  changed_when: false
+  register: username_uid
+
+- name: copy the service file to systemd's location
+  ansible.builtin.template:
+    src: kerberos-ticket-refresher.service
+    dest: '/etc/systemd/system/{{ username }}-kerberos-ticket-refresher.service'
+    mode: 0644
+    owner: root
+    group: root
+  vars:
+    uid: '{{ username_uid.stdout }}'
+
+- name: Enable the service and set the state to "started"
+  ansible.builtin.systemd:
+    state: started
+    daemon_reload: true
+    enabled: true
+    name: '{{ username }}-kerberos-ticket-refresher.service'

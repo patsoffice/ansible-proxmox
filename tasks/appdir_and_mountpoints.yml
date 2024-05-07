@@ -9,13 +9,13 @@
   loop: '{{ appdirs }}'
   when: appdirs is defined
 
-- name: Create mountpoints
+- name: create mountpoints
   ansible.builtin.file:
     path: '{{ item.dest }}'
     state: directory
-    mode: '{{ item.mode | default("0755") }}'
-    owner: '{{ item.owner | default("root") }}'
-    group: '{{ item.group | default("root") }}'
+    mode: '{{ item.v4 | default(False) | ternary(omit, item.mode) | default("0755") }}'
+    owner: '{{ item.v4 | default(False) | ternary(omit, item.owner) | default("root") }}'
+    group: '{{ item.v4 | default(False) | ternary(omit, item.group) | default("root") }}'
   loop: '{{ mountpoints }}'
   when: mountpoints is defined
 
@@ -23,7 +23,7 @@
   ansible.posix.mount:
     src: '{{ item.src }}'
     path: '{{ item.dest }}'
-    opts: rw
+    opts: '{{ item.v4 | default(False) | ternary("vers=4,sec=krb5p", "rw") }}'
     state: mounted
     fstype: nfs
   loop: '{{ mountpoints }}'
