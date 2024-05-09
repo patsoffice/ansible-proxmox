@@ -6,10 +6,11 @@
     mode: 0644
     owner: root
     group: root
+  register: systemd_service_unit
 
-- name: Enable the service and set the state to "{{ state }}"
+- name: Enable the service and set the state
   ansible.builtin.systemd:
     state: '{{ state | default(omit) }}'
-    daemon_reload: true
+    daemon_reload: '{{ systemd_service_unit.changed }}'
     enabled: true
     name: '{{ systemd_unit }}'

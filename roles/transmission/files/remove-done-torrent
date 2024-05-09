@@ -1,13 +1,13 @@
 #!/bin/sh
 # script to check for completed torrents and stop and remove them
 
-TORRENTLIST=`transmission-remote --list | sed -e '1d;$d;s/^ *//' | cut -f1 -d' '`
+TORRENTLIST=`/opt/transmission/bin/transmission-remote --list | sed -e '1d;$d;s/^ *//' | cut -f1 -d' '`
 
 for TORRENTID in $TORRENTLIST
 do
         TORRENTID=`echo "$TORRENTID" | sed 's:*::'`
 
-        INFO=`transmission-remote --torrent $TORRENTID --info`
+        INFO=`/opt/transmission/bin/transmission-remote --torrent $TORRENTID --info`
 
         NAME=`echo "$INFO" | grep "Name: *"`
         DL_COMPLETED=`echo "$INFO" | grep "Percent Done: 100%"`
@@ -17,6 +17,6 @@ do
                 echo "Torrent $TORRENTID is in $STATE_STOPPED"
                 echo "$NAME"
                 echo "Removing torrent from list"
-                transmission-remote --torrent $TORRENTID --remove
+                /opt/transmission/bin/transmission-remote --torrent $TORRENTID --remove
         fi
 done

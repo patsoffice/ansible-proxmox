@@ -39,12 +39,14 @@
     mode: 0644
     owner: root
     group: root
+  register: refresher_service_unit
   vars:
     uid: '{{ username_uid.stdout }}'
+    wanted_by: '{{ wanted_by_unit | default("multi-user.target") }}'
 
-- name: Enable the service and set the state to "started"
+- name: Enable the service and set the state
   ansible.builtin.systemd:
-    state: started
+    state: '{{ refresher_service_unit.changed | ternary("restarted", "started") }}'
     daemon_reload: true
     enabled: true
     name: '{{ username }}-kerberos-ticket-refresher.service'

@@ -2,12 +2,92 @@
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
-      - apt-transport-https
-      - gnupg
-      - transmission-daemon
+      - build-essential
+      - cmake
+      - freeipa-client
+      - git
+      - kstart
+      - libcurl4-openssl-dev
+      - libssl-dev
+      - libsystemd-dev
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
-      - software-properties-common
+  tags:
+    - transmission
+
+- name: Check that /opt/transmission/bin/transmission-show exists
+  ansible.builtin.stat:
+    path: /opt/transmission/bin/transmission-show
+  register: transmission_show
+  tags:
+    - transmission
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/transmission/bin/transmission-show --version 2>&1 | awk '{ print $2 }'"
+  register: file_version
+  when: transmission_show.stat.exists
+  changed_when: false
+  tags:
+    - transmission
+
+- name: Set a default transmission file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - transmission
+
+- name: checkout transmission
+  ansible.builtin.git:
+    repo: https://github.com/transmission/transmission.git
+    dest: /opt/transmission-src
+    version: '{{ transmission_version }}'
+    recursive: true
+  when: transmission_version != file_version.stdout
+  tags:
+    - transmission
+
+- name: build and install transmission
+  ansible.builtin.shell:
+    cmd: |
+      cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_DAEMON=ON -DENABLE_QT=OFF -DENABLE_UTILS=ON -DENABLE_CLI=OFF -DENABLE_GTK=OFF  -DENABLE_MAC=OFF -DWITH_SYSTEMD=ON -DCMAKE_INSTALL_PREFIX=/opt/transmission &&
+      cmake --build build &&
+      cmake --install build
+    chdir: /opt/transmission-src
+  when: transmission_version != file_version.stdout
+  tags:
+    - transmission
+
+- name: remove the build directory
+  ansible.builtin.file:
+    path: /opt/transmission-src
+    state: absent
+  when: transmission_version != file_version.stdout
+  tags:
+    - transmission
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    groupname: media
+    username: transmission
+    password: '{{ transmission.password }}'
+  tags:
+    - transmission
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - transmission
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: transmission
+    groupname: media
+    wanted_by_unit: transmission-daemon.service
   tags:
     - transmission
 
@@ -15,40 +95,32 @@
   vars:
     appdirs:
       - path: /var/lib/transmission-daemon/bin/
-        owner: debian-transmission
-        group: debian-transmission
+        owner: transmission
+        group: transmission
     mountpoints:
-      - src: '{{ download_host }}:{{ download_path }}'
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
         dest: /downloads
         mode: '0775'
-        owner: '{{ download_uid }}'
-        group: '{{ media_gid }}'
-  tags:
-    - transmission
-
-- name: Stop the service
-  ansible.builtin.systemd:
-    state: stopped
-    enabled: true
-    name: transmission-daemon
+        owner: 'transmission'
+        group: 'media'
+        v4: true
   tags:
     - transmission
 
 - name: copy the config
   ansible.builtin.copy:
     src: settings.json
-    dest: /etc/transmission-daemon/settings.json
+    dest: /var/lib/transmission-daemon/settings.json
     mode: 0600
-    owner: debian-transmission
-    group: debian-transmission
+    owner: transmission
+    group: transmission
   tags:
     - transmission
 
-- name: Start and enable the service
-  ansible.builtin.systemd:
-    state: started
-    enabled: true
-    name: transmission-daemon
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'transmission-daemon.service'
+    state: '{{ (transmission_version != file_version.stdout) | ternary("restarted", "started") }}'
   tags:
     - transmission
 
@@ -57,8 +129,8 @@
     src: 'remove-done-torrent'
     dest: '/var/lib/transmission-daemon/bin/remove-done-torrent'
     mode: 0700
-    owner: debian-transmission
-    group: debian-transmission
+    owner: transmission
+    group: transmission
   tags:
     - transmission
 
@@ -67,8 +139,8 @@
     name: blocklist update
     minute: "0"
     hour: "23"
-    user: debian-transmission
-    job: 'transmission-remote --blocklist-update &> /dev/null'
+    user: transmission
+    job: '/opt/transmission/bin/transmission-remote --blocklist-update &> /dev/null'
     cron_file: transmission-blocklist-update
   tags:
     - transmission
@@ -77,8 +149,8 @@
   ansible.builtin.cron:
     name: remove done torrent
     minute: '*/5'
-    user: debian-transmission
-    job: '/var/lib/transmission/bin/remove-done-torrent &> /dev/null'
+    user: transmission
+    job: '/opt/transmission/bin/remove-done-torrent &> /dev/null'
     cron_file: remove-done-torrent
   tags:
     - transmission
