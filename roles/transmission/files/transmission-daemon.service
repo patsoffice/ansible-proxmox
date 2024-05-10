@@ -9,6 +9,8 @@ Group=media
 Type=notify
 ExecStart=/opt/transmission/bin/transmission-daemon -f --log-level=error --config-dir /var/lib/transmission-daemon
 ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=1s
 
 # Hardening
 CapabilityBoundingSet=
