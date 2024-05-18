@@ -1,0 +1,36 @@
+---
+- name: Create the application directories
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: directory
+    mode: '{{ item.mode | default("0755") }}'
+    owner: '{{ item.owner | default("root") }}'
+    group: '{{ item.group | default("root") }}'
+  loop: '{{ appdirs }}'
+  when: appdirs is defined
+
+- name: collect existing mount points
+  ansible.builtin.shell: mount | grep nfs
+  register: nfs_mounts
+  changed_when: false
+  when: mountpoints is defined
+
+- name: create mountpoints
+  ansible.builtin.file:
+    path: '{{ item.dest }}'
+    state: directory
+    mode: '{{ item.mode | default("0755") }}'
+    owner: '{{ item.owner | default("root") }}'
+    group: '{{ item.group | default("root") }}'
+  loop: '{{ mountpoints }}'
+  when: mountpoints is defined and item.dest not in nfs_mounts.stdout
+
+- name: Mount the NFS volumes
+  ansible.posix.mount:
+    src: '{{ item.src }}'
+    path: '{{ item.dest }}'
+    opts: 'vers=4,sec=krb5p'
+    state: mounted
+    fstype: nfs
+  loop: '{{ mountpoints }}'
+  when: mountpoints is defined

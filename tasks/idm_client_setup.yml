@@ -27,6 +27,8 @@
     givenname: '{{ username }}'
     sn: '{{ username }}'
     state: present
+    homedirectory: '{{ homedirectory | default(omit) }}'
+    loginshell: '{{ loginshell | default(omit) }}'
     password: '{{ password | default(omit) }}'
     ipa_host: '{{ idm_server_name }}'
     ipa_user: '{{ idm_admin_principal }}'

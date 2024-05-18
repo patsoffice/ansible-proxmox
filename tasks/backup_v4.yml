@@ -1,0 +1,76 @@
+- name: make the backup directory if it doesn't exist
+  ansible.builtin.file:
+    path: '{{ backup_path_v4 }}/{{ backup_dir_name }}'
+    state: directory
+    recurse: true
+    owner: '{{ backup_owner }}'
+    group: '{{ backup_group }}'
+    mode: '0770'
+  delegate_to: '{{ backup_host_v4 }}'
+  remote_user: root
+  become: true
+
+- name: set directory user ownership
+  ansible.posix.acl:
+    path: '{{ backup_path_v4 }}/{{ backup_dir_name }}'
+    entity: '{{ backup_owner }}'
+    etype: user
+    permissions: rwX
+    default: true
+    state: present
+  delegate_to: '{{ backup_host_v4 }}'
+  remote_user: root
+  become: true
+
+- name: set directory group ownership
+  ansible.posix.acl:
+    path: '{{ backup_path_v4 }}/{{ backup_dir_name }}'
+    entity: '{{ backup_group }}'
+    etype: group
+    permissions: rwX
+    default: true
+    state: present
+  delegate_to: '{{ backup_host_v4 }}'
+  remote_user: root
+  become: true
+
+- name: create the log file
+  ansible.builtin.file:
+    path: /var/log/backup.log
+    owner: '{{ backup_owner }}'
+    group: '{{ backup_group }}'
+    mode: '0770'
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+
+- name: copy the backup script
+  ansible.builtin.template:
+    src: 'backup.sh'
+    dest: '/opt/backup.sh'
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Creates a backup cron file under /etc/cron.d
+  ansible.builtin.cron:
+    name: backup
+    minute: '0'
+    hour: '0'
+    user: '{{ backup_owner }}'
+    job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/backup.sh'
+    cron_file: backup
+
+- name: Add a MAILTO variable
+  ansible.builtin.cron:
+    name: MAILTO
+    env: true
+    job: '{{ cron_mailto }}'
+    user: root
+    cron_file: backup
+
+- name: Add hosts to postfix_hosts
+  ansible.builtin.add_host:
+    name: '{{ inventory_hostname }}'
+    groups: postfix_hosts
+  changed_when: false

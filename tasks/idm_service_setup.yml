@@ -20,3 +20,9 @@
   register: result
   failed_when: result.failed or "Failed" in result.stderr
   when: service_principal_name not in principals.stdout
+
+- name: restart nfs client
+  ansible.builtin.systemd:
+    state: restarted
+    name: nfs-client.target
+  when: result.changed and ('nfs/' in service_principal_name)

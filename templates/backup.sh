@@ -3,7 +3,7 @@
 #This is a rdiff-backup utility backup script
 
 #Backup command
-rdiff-backup --print-statistics {{ backup_src }} {{ backup_dest }} >>/var/log/backup.log
+rdiff-backup --new --print-statistics backup {{ backup_src }} {{ backup_dest }} >>/var/log/backup.log
 
 #Checking rdiff-backup command success/error
 status=$?
@@ -14,4 +14,4 @@ if [ $status != 0 ]; then
 fi
 
 #Remove incremental backup files older than one month
-rdiff-backup --force --remove-older-than 1M {{ backup_dest }} >>/var/log/backup.log
+rdiff-backup --new remove increments --older-than 1M {{ backup_dest }} >>/var/log/backup.log

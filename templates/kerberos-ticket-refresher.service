@@ -12,4 +12,4 @@ Restart=on-failure
 RestartSec=5s
 
 [Install]
-WantedBy={{ wanted_by }}
+WantedBy={{ wanted_by | default("multi-user.target") }}
