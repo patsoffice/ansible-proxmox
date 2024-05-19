@@ -1,51 +1,175 @@
 ---
-- name: Download the repo key
-  ansible.builtin.get_url:
-    url: https://syncthing.net/release-key.gpg
-    dest: /usr/share/keyrings/syncthing.key
-  tags:
-    - syncthing
-
-- name: Install the apt repo
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/syncthing.key] https://apt.syncthing.net/ syncthing stable"
-    state: present
-    filename: syncthing
-  tags:
-    - syncthing
-
 - import_tasks: ubuntu_setup.yml
   vars:
-    username: syncthing
-    uid: 2000
     packages:
-      - apt-transport-https
-      - gnupg
+      - freeipa-client
+      - git
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
-      - software-properties-common
       - xmlstarlet
-  tags:
-    - syncthing
-
-- name: install syncthing
-  ansible.builtin.apt:
-    pkg: syncthing
-  register: syncthing_pkg
   tags:
     - syncthing
 
 - import_tasks: appdir_and_mountpoints.yml
   vars:
     appdirs:
-      - path: /opt
+      - path: /opt/syncthing/bin
         owner: root
         group: root
+  tags:
+    - syncthing
+
+- name: Get Go URL version
+  ansible.builtin.set_fact:
+    go_web_version: "{{ syncthing_go_url | regex_search('/go([\\d.]+).linux-amd64.tar.gz', '\\1') | first }}"
+  tags:
+    - syncthing
+
+- name: Check that /opt/go/bin/go exists
+  ansible.builtin.stat:
+    path: /opt/go/bin/go
+  register: go_bin
+  tags:
+    - syncthing
+
+- name: Get the installed go version
+  ansible.builtin.shell:
+    cmd: "/opt/go/bin/go version | awk -F'version ' '{print $2}' | awk '{print $1}' | sed 's/go//'"
+  register: go_file_version
+  when: go_bin.stat.exists
+  changed_when: false
+  tags:
+    - syncthing
+
+- name: Set a default go file version
+  ansible.builtin.set_fact:
+    go_file_version:
+      stdout: 'missing'
+  when: go_file_version.stdout is undefined
+  tags:
+    - syncthing
+
+- name: Download go
+  ansible.builtin.get_url:
+    url: '{{ syncthing_go_url }}'
+    dest: /tmp/go.tar.gz
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - syncthing
+
+- name: Extract the go tarball
+  ansible.builtin.unarchive:
+    src: /tmp/go.tar.gz
+    dest: /opt
+    remote_src: true
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - syncthing
+
+- name: Remove the go tarball
+  ansible.builtin.file:
+    path: /opt/go.tar.gz
+    state: absent
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - syncthing
+
+- name: Check that /opt/syncthing/bin/syncthing exists
+  ansible.builtin.stat:
+    path: /opt/syncthing/bin/syncthing
+  register: syncthing_bin
+  tags:
+    - syncthing
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/syncthing/bin/syncthing -version 2>&1 | awk '{ print $2 }'"
+  register: file_version
+  when: syncthing_bin.stat.exists
+  changed_when: false
+  tags:
+    - syncthing
+
+- name: Set a default syncthing file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - syncthing
+
+- name: checkout syncthing
+  ansible.builtin.git:
+    repo: https://github.com/syncthing/syncthing.git
+    dest: /opt/syncthing-src
+    version: '{{ syncthing_version }}'
+    recursive: true
+  when: syncthing_version != file_version.stdout
+  tags:
+    - syncthing
+
+- name: build syncthing
+  ansible.builtin.shell:
+    cmd: PATH=$PATH:/opt/go/bin go run build.go
+    chdir: /opt/syncthing-src
+  when: syncthing_version != file_version.stdout
+  tags:
+    - syncthing
+
+- name: copy the syncthing binary
+  ansible.builtin.copy:
+    src: /opt/syncthing-src/bin/syncthing
+    dest: /opt/syncthing/bin/syncthing
+    remote_src: yes
+    mode: '0755'
+    owner: root
+    group: root
+  when: syncthing_version != file_version.stdout
+  tags:
+    - syncthing
+
+- name: remove the build directory
+  ansible.builtin.file:
+    path: /opt/syncthing-src
+    state: absent
+  when: syncthing_version != file_version.stdout
+  tags:
+    - syncthing
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: syncthing
+    password: '{{ syncthing.password }}'
+  tags:
+    - syncthing
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - syncthing
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: syncthing
+    groupname: syncthing
+  tags:
+    - syncthing
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /home/syncthing
+        owner: syncthing
+        group: syncthing
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: syncthing
+        group: syncthing
   tags:
     - syncthing
 
@@ -58,9 +182,27 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/syncthing/ /home/syncthing/.local/state/syncthing
+    cmd: rdiff-backup --api-version 201 --force -v7 restore /backups/syncthing/ /home/syncthing/
   ignore_errors: true
   when: not syncthing_config.stat.exists
+  tags:
+    - syncthing
+
+- name: copy the service file to systemd's location
+  ansible.builtin.copy:
+    src: syncthing@.service
+    dest: /etc/systemd/system/syncthing@.service
+    mode: 0644
+    owner: root
+    group: root
+  register: systemd_service_unit
+  tags:
+    - syncthing
+
+- name: Enable the service and set the state
+  ansible.builtin.systemd:
+    daemon_reload: '{{ systemd_service_unit.changed }}'
+    name: syncthing@syncthing.service
   tags:
     - syncthing
 
@@ -103,7 +245,7 @@
 
 - name: Restart and enable the service
   ansible.builtin.systemd:
-    state: '{{ syncthing_pkg.changed | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (syncthing_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
     enabled: true
     name: syncthing@syncthing.service
   tags:
@@ -117,9 +259,12 @@
   tags:
     - syncthing
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: /home/syncthing
     backup_dest: /backups/syncthing
+    backup_dir_name: syncthing
+    backup_owner: syncthing
+    backup_group: syncthing
   tags:
     - syncthing

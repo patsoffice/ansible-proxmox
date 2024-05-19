@@ -29,6 +29,9 @@ radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.6.0.884
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.3.1/SABnzbd-4.3.1-src.tar.gz
 # https://github.com/Sonarr/Sonarr/releases
 sonarr_master_url: https://github.com/Sonarr/Sonarr/releases/download/v4.0.4.1491/Sonarr.main.4.0.4.1491.linux-x64.tar.gz
+# https://github.com/syncthing/syncthing/releases
+syncthing_version: v1.27.7
+syncthing_go_url: https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.14.2.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
