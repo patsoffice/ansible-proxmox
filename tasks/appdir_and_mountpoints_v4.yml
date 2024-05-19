@@ -13,6 +13,7 @@
   ansible.builtin.shell: mount | grep nfs
   register: nfs_mounts
   changed_when: false
+  ignore_errors: true
   when: mountpoints is defined
 
 - name: create mountpoints

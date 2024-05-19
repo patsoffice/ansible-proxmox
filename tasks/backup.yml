@@ -1,5 +1,5 @@
 - name: copy the backup script
-  template:
+  ansible.builtin.template:
     src: 'backup.sh'
     dest: '/opt/backup.sh'
     mode: 0755

@@ -75,6 +75,20 @@ proxmox_hosts:
         reverse_proxy_service: drawio
         reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
         service_port: 8080
+      - hostname: '{{ home_assistant.hostname }}'
+        vmid: '{{ home_assistant.vmid }}'
+        password: '{{ home_assistant.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 2
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: home_assistant
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
         password: '{{ radarr.password }}'
@@ -381,20 +395,6 @@ proxmox_hosts:
         reverse_proxy_service: tdarr
         reverse_proxy_hostname: '{{ tdarr_server.reverse_proxy_hostname }}'
         service_port: 8265
-      - hostname: '{{ home_assistant.hostname }}'
-        vmid: '{{ home_assistant.vmid }}'
-        password: '{{ home_assistant.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
-        cores: 2
-        memory: 4096
-        swap: 4096
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: home_assistant
   pve006:
     api_host: '{{ pve006.api_host }}'
     api_user: '{{ pve006.api_user }}'

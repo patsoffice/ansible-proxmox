@@ -3,7 +3,7 @@
 #This is a rdiff-backup utility backup script
 
 #Backup command
-rdiff-backup --new --print-statistics backup {{ backup_src }} {{ backup_dest }} >>/var/log/backup.log
+rdiff-backup --new backup --print-statistics {{ backup_src }} {{ backup_dest }} >>/var/log/backup.log
 
 #Checking rdiff-backup command success/error
 status=$?

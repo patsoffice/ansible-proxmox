@@ -43,4 +43,4 @@
     ipa_host: '{{ idm_server_name }}'
     ipa_user: '{{ idm_admin_principal }}'
     ipa_pass: '{{ idm_admin_password }}'
-  when: groupname is defined
+  when: groupname is defined and groupname != username
