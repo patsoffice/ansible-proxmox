@@ -11,6 +11,7 @@
       - "--principal={{ idm_admin_principal }}"
       - "--password={{ idm_admin_password }}"
       - --no-ntp
+      - --force-join
       - --unattended
   when: not sysrestore_state.stat.exists
 
