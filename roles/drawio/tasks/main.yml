@@ -4,10 +4,8 @@
     groupname: drawio
     username: drawio
     packages:
-      - nfs-common
       - openjdk-11-jre
       - openjdk-11-jdk
-      - rdiff-backup
       - unzip
       - xmlstarlet
   tags:
