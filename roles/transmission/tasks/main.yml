@@ -71,8 +71,8 @@
 
 - import_tasks: idm_client_setup.yml
   vars:
-    groupname: media
     username: transmission
+    groupname: media
     password: '{{ transmission.password }}'
   tags:
     - transmission
@@ -91,7 +91,7 @@
   tags:
     - transmission
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /var/lib/transmission-daemon/bin/
@@ -101,9 +101,20 @@
       - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
         dest: /downloads
         mode: '0775'
-        owner: 'transmission'
-        group: 'media'
-        v4: true
+        owner: transmission
+        group: media
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0770'
+        owner: transmission
+        group: media
+  tags:
+    - transmission
+
+- name: check if /var/lib/transmission-daemon/settings.json exists
+  ansible.builtin.stat:
+    path: /var/lib/transmission-daemon/settings.json
+  register: settings_json
   tags:
     - transmission
 
@@ -114,6 +125,7 @@
     mode: 0600
     owner: transmission
     group: transmission
+  when: not settings_json.stat.exists
   tags:
     - transmission
 
@@ -160,5 +172,15 @@
     - transmission
 
 - import_tasks: reverse_proxy.yml
+  tags:
+    - transmission
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: '/var/lib/transmission'
+    backup_dest: '/backups/transmission'
+    backup_dir_name: transmission
+    backup_owner: transmission
+    backup_group: transmission
   tags:
     - transmission
