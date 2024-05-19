@@ -1,11 +1,12 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    username: tautulli
-    shell: /bin/bash
     packages:
+      - freeipa-client
       - git
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
       - python3
       - python3-dev
       - python3-pip
@@ -14,7 +15,29 @@
   tags:
     - tautulli
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: tautulli
+    password: '{{ test.password }}'
+    homedirectory: /opt/tautulli
+    loginshell: /usr/bin/bash
+  tags:
+    - tautulli
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - tautulli
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: tautulli
+    groupname: tautulli
+  tags:
+    - tautulli
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
@@ -23,11 +46,15 @@
       - path: /opt/tautulli
         owner: tautulli
         group: tautulli
+      - path: /opt/python
+        owner: tautulli
+        group: tautulli
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: tautulli
+        group: tautulli
   tags:
     - tautulli
 
@@ -92,30 +119,46 @@
   tags:
     - tautulli
 
+- name: Ensure the virtual environment is created
+  ansible.builtin.shell:
+    cmd: python3 -m venv python
+    chdir: /opt/
+  become: true
+  become_user: tautulli
+  tags:
+    - tautulli
+
 - name: Install the requirements
   ansible.builtin.pip:
     requirements: /opt/tautulli/requirements.txt
+    virtualenv: /opt/python
+    virtualenv_site_packages: true
+  become: true
+  become_user: tautulli
   tags:
     - tautulli
 
 - name: Install pyopenssl
   ansible.builtin.pip:
     name: pyopenssl
+    virtualenv: /opt/python
+    virtualenv_site_packages: true
+  become_user: tautulli
   tags:
     - tautulli
 
 - name: Check that /config/tautulli.db exists
   ansible.builtin.stat:
     path: /config/tautulli.db
-  register: sabnzbd_ini
+  register: tautulli_db
   tags:
     - tautulli
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/tautulli/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/tautulli/ /config/
   ignore_errors: true
-  when: not sabnzbd_ini.stat.exists
+  when: not tautulli_db.stat.exists
   tags:
     - tautulli
 
@@ -134,9 +177,12 @@
   tags:
     - tautulli
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/config'
     backup_dest: '/backups/tautulli'
+    backup_dir_name: tautulli
+    backup_owner: tautulli
+    backup_group: tautulli
   tags:
     - tautulli

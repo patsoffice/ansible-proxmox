@@ -182,7 +182,7 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup --api-version 201 --force -v7 restore /backups/syncthing/ /home/syncthing/
+    cmd: rdiff-backup --api-version 201 --force restore /backups/syncthing/ /home/syncthing/
   ignore_errors: true
   when: not syncthing_config.stat.exists
   tags:
