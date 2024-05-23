@@ -5,9 +5,22 @@
       - acl
       - avahi-daemon
       - freeipa-client
+      - jq
       - nfs-common
       - nfs-kernel-server
       - samba
+  tags:
+    - nas
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /opt/bin
+        owner: root
+        group: root
+      - path: /opt/etc
+        owner: root
+        group: root
   tags:
     - nas
 
@@ -124,5 +137,36 @@
     enabled: true
     state: restarted
   when: samba_service.changed
+  tags:
+    - nas
+
+- name: copy the ownership script
+  ansible.builtin.copy:
+    src: ownership.sh
+    dest: /opt/bin/ownership.sh
+    mode: 0755
+    owner: root
+    group: root
+  tags:
+    - nas
+
+- name: copy the ownerships config
+  template:
+    src: ownership.json
+    dest: /opt/etc/ownership.json
+    mode: 0644
+    owner: root
+    group: root
+  tags:
+    - nas
+
+- name: create a cron job for setting ownership
+  ansible.builtin.cron:
+    name: ownership
+    minute: '0'
+    hour: '*'
+    user: root
+    job: '/opt/bin/ownership.sh'
+    cron_file: ownership
   tags:
     - nas
