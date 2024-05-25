@@ -1,44 +1,62 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: media
-    gid: '{{ media_gid }}'
-    username: lidarr
-    uid: '{{ music_uid }}'
     packages:
       - binutils
+      - freeipa-client
+      - kstart
       - libchromaprint-tools
       - mediainfo
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
       - sqlite3
   tags:
     - lidarr
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: lidarr
+    groupname: media
+    password: '{{ lidarr.password }}'
+    homedirectory: /opt/lidarr
+    loginshell: /usr/bin/bash
+  tags:
+    - lidarr
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - lidarr
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: lidarr
+    groupname: media
+  tags:
+    - lidarr
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
         owner: lidarr
-        group: media
+        group: lidarr
       - path: /opt/lidarr
         owner: root
         group: root
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
-      - src: '{{ music_host }}:{{ music_path }}'
+        owner: lidarr
+        group: lidarr
+      - src: '{{ music_host_v4 }}:{{ music_path_v4 }}'
         dest: /music
         mode: '0775'
-        owner: '{{ music_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ download_host }}:{{ download_path }}'
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
         dest: /downloads
         mode: '0775'
-        owner: '{{ download_uid }}'
-        group: '{{ media_gid }}'
   tags:
     - lidarr
 
@@ -108,8 +126,10 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/lidarr/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/lidarr/ /config/
   ignore_errors: true
+  become: true
+  become_user: lidarr
   when: not lidarr_db.stat.exists
   tags:
     - lidarr
@@ -129,9 +149,12 @@
   tags:
     - lidarr
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/config'
     backup_dest: '/backups/lidarr'
+    backup_dir_name: lidarr
+    backup_owner: lidarr
+    backup_group: lidarr
   tags:
     - lidarr

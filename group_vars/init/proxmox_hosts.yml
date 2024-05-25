@@ -481,7 +481,7 @@ proxmox_hosts:
       - hostname: '{{ lidarr.hostname }}'
         vmid: '{{ lidarr.vmid }}'
         password: '{{ lidarr.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 1024
         swap: 1024
