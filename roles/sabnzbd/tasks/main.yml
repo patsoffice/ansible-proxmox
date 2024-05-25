@@ -1,41 +1,69 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: media
-    gid: '{{ media_gid }}'
-    username: sabnzbd
-    uid: '{{ download_uid }}'
     packages:
-    - nfs-common
-    - par2
-    - python3-pip
-    - p7zip-full
-    - p7zip-rar
-    - rdiff-backup
-    - unzip
-    - unrar
+      - freeipa-client
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - p7zip-full
+      - p7zip-rar
+      - par2
+      - python3
+      - python3-pip
+      - python3-venv
+      - rdiff-backup
+      - unrar
+      - unzip
   tags:
     - sabnzbd
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: sabnzbd
+    groupname: media
+    password: '{{ sabnzbd.password }}'
+    homedirectory: /opt/sabnzbd
+    loginshell: /usr/bin/bash
+  tags:
+    - sabnzbd
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - sabnzbd
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: sabnzbd
+    groupname: media
+  tags:
+    - sabnzbd
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
         owner: sabnzbd
-        group: media
+        group: sabnzbd
+      - path: /opt/python
+        owner: sabnzbd
+        group: sabnzbd
       - path: /opt/sabnzbd
-        owner: root
-        group: root
+        owner: sabnzbd
+        group: sabnzbd
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
-      - src: '{{ download_host }}:{{ download_path }}'
+        mode: '0775'
+        owner: sabnzbd
+        group: sabnzbd
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
         dest: /downloads
         mode: '0775'
-        owner: '{{ download_uid }}'
-        group: '{{ media_gid }}'
+        owner: sabnzbd
+        group: media
   tags:
     - sabnzbd
 
@@ -89,17 +117,31 @@
   tags:
     - sabnzbd
 
-- name: Install the requirements
-  ansible.builtin.pip:
-    requirements: /opt/sabnzbd/requirements.txt
-  tags:
-    - sabnzbd
-
 - name: Remove the tarball
   ansible.builtin.file:
     path: /opt/sabnzbd/sabnzbd.tar.gz
     state: absent
   when: web_version != file_version.stdout
+  tags:
+    - sabnzbd
+
+- name: Ensure the virtual environment is created
+  ansible.builtin.shell:
+    cmd: python3 -m venv python
+    chdir: /opt/
+  become: true
+  become_user: sabnzbd
+  changed_when: false
+  tags:
+    - sabnzbd
+
+- name: Install the requirements
+  ansible.builtin.pip:
+    requirements: /opt/sabnzbd/requirements.txt
+    virtualenv: /opt/python
+    virtualenv_site_packages: true
+  become: true
+  become_user: sabnzbd
   tags:
     - sabnzbd
 
@@ -112,8 +154,10 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/sabnzbd/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/sabnzbd/ /config/
   ignore_errors: true
+  become: true
+  become_user: sabnzbd
   when: not sabnzbd_ini.stat.exists
   tags:
     - sabnzbd
@@ -133,9 +177,12 @@
   tags:
     - sabnzbd
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/config'
     backup_dest: '/backups/sabnzbd'
+    backup_dir_name: sabnzbd
+    backup_owner: sabnzbd
+    backup_group: sabnzbd
   tags:
     - sabnzbd
