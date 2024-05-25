@@ -86,7 +86,7 @@
 - name: Checkout pyenv
   ansible.builtin.git:
     repo: https://github.com/pyenv/pyenv.git
-    dest: /home/home_assistant/.pyenv
+    dest: /opt/home_assistant/.pyenv
   become: true
   become_user: home_assistant
   tags:
@@ -95,7 +95,7 @@
 - name: copy the file used to setup pyenv
   ansible.builtin.copy:
     src: bashrc-pyenv
-    dest: /home/home_assistant/.bashrc-pyenv
+    dest: /opt/home_assistant/.bashrc-pyenv
     mode: 0644
     owner: home_assistant
     group: home_assistant
@@ -104,7 +104,7 @@
 
 - name: Get the installed version
   ansible.builtin.shell:
-    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv global'
+    cmd: '. /opt/home_assistant/.bashrc-pyenv && pyenv global'
     executable: /bin/bash
   become: true
   become_user: home_assistant
@@ -115,7 +115,7 @@
 
 - name: 'Build python {{ home_assistant_pyenv_version }}'
   ansible.builtin.shell:
-    cmd: '. /home/home_assistant/.bashrc-pyenv && pyenv install -f {{ home_assistant_pyenv_version }} && pyenv global {{ home_assistant_pyenv_version }}'
+    cmd: '. /opt/home_assistant/.bashrc-pyenv && pyenv install -f {{ home_assistant_pyenv_version }} && pyenv global {{ home_assistant_pyenv_version }}'
     executable: /bin/bash
   become: true
   become_user: home_assistant
@@ -125,7 +125,7 @@
 
 - name: Ensure the virtual environment is created
   ansible.builtin.shell:
-    cmd: /home/home_assistant/.pyenv/shims/python3 -m venv venv
+    cmd: /opt/home_assistant/.pyenv/shims/python3 -m venv venv
     chdir: /opt/home_assistant
   become: true
   become_user: home_assistant
