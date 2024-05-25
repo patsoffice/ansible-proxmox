@@ -1,17 +1,10 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: media
-    gid: '{{ media_gid }}'
-    username: sonarr
-    uid: '{{ tv_uid }}'
     packages:
       - binutils
-      - mediainfo
-      - mono-runtime
-      - nfs-common
-      - rdiff-backup
-      - libmono-system-net-http4.0-cil
+      - freeipa-client
+      - kstart
       - libmono-corlib4.5-cil
       - libmono-microsoft-csharp4.0-cil
       - libmono-posix4.0-cil
@@ -23,6 +16,7 @@
       - libmono-system-data4.0-cil
       - libmono-system-identitymodel4.0-cil
       - libmono-system-io-compression4.0-cil
+      - libmono-system-net-http4.0-cil
       - libmono-system-numerics4.0-cil
       - libmono-system-runtime-serialization4.0-cil
       - libmono-system-security4.0-cil
@@ -33,14 +27,39 @@
       - libmono-system-xml-linq4.0-cil
       - libmono-system-xml4.0-cil
       - libmono-system4.0-cil
-      - mono-runtime
-      - mono-vbnc
       - mediainfo
+      - mono-runtime
+      - nfs-common
+      - nfs4-acl-tools
+      - rdiff-backup
       - xmlstarlet
   tags:
     - sonarr
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: sonarr
+    groupname: media
+    password: '{{ sonarr.password }}'
+    homedirectory: /opt/sonarr
+    loginshell: /usr/bin/bash
+  tags:
+    - sonarr
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - sonarr
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: sonarr
+    groupname: media
+  tags:
+    - sonarr
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
@@ -50,20 +69,17 @@
         owner: root
         group: root
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
-      - src: '{{ tv_host }}:{{ tv_path }}'
+        mode: '0770'
+        owner: sonarr
+        group: sonarr
+      - src: '{{ tv_host_v4 }}:{{ tv_path_v4 }}'
         dest: /tv
         mode: '0775'
-        owner: '{{ tv_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ download_host }}:{{ download_path }}'
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
         dest: /downloads
         mode: '0775'
-        owner: '{{ download_uid }}'
-        group: '{{ media_gid }}'
   tags:
     - sonarr
 
@@ -133,8 +149,10 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/sonarr/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/sonarr/ /config/
   ignore_errors: true
+  become: true
+  become_user: sonarr
   when: not sonarr_db.stat.exists
   tags:
     - sonarr
@@ -154,9 +172,12 @@
   tags:
     - sonarr
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/config'
     backup_dest: '/backups/sonarr'
+    backup_dir_name: sonarr
+    backup_owner: sonarr
+    backup_group: sonarr
   tags:
     - sonarr

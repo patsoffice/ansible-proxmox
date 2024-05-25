@@ -109,7 +109,7 @@ proxmox_hosts:
       - hostname: '{{ sonarr.hostname }}'
         vmid: '{{ sonarr.vmid }}'
         password: '{{ sonarr.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 2048
         swap: 2048
