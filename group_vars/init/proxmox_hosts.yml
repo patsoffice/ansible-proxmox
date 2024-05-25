@@ -178,7 +178,7 @@ proxmox_hosts:
         vmid: '{{ tdarr_node2.vmid }}'
         password: '{{ tdarr_node2.password }}'
         unprivileged: false
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 6
         memory: 16384
         swap: 4096
@@ -363,7 +363,7 @@ proxmox_hosts:
         vmid: '{{ tdarr_node.vmid }}'
         password: '{{ tdarr_node.password }}'
         unprivileged: false
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 6
         memory: 16384
         swap: 4096

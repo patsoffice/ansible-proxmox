@@ -1,15 +1,13 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: media
-    gid: '{{ media_gid }}'
-    username: tdarr
-    uid: '{{ transcode_uid }}'
     packages:
+      - freeipa-client
       - handbrake-cli
       - intel-opencl-icd
+      - kstart
       - nfs-common
-      - nfs-common
+      - nfs4-acl-tools
       - ocl-icd-libopencl1
       - rdiff-backup
       - unzip
@@ -17,7 +15,29 @@
   tags:
     - tdarr_node
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: tdarr
+    groupname: media
+    homedirectory: /opt/tdarr
+    loginshell: /usr/bin/bash
+  tags:
+    - tdarr_node
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - tdarr_node
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: tdarr
+    groupname: media
+  tags:
+    - tdarr_node
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: '/opt/tdarr/Tdarr_Node'
@@ -33,21 +53,15 @@
         owner: tdarr
         group: media
     mountpoints:
-      - src: '{{ movies_host }}:{{ movies_path }}'
+      - src: '{{ movies_host_v4 }}:{{ movies_path_v4 }}'
         dest: /movies
         mode: '0775'
-        owner: '{{ movies_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ tv_host }}:{{ tv_path }}'
+      - src: '{{ tv_host_v4 }}:{{ tv_path_v4 }}'
         dest: /tv
         mode: '0775'
-        owner: '{{ tv_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ transcode_host }}:{{ transcode_path }}'
+      - src: '{{ transcode_host_v4 }}:{{ transcode_path_v4 }}'
         dest: /opt/tdarr/transcode-cache
         mode: '0775'
-        owner: '{{ transcode_uid }}'
-        group: '{{ media_gid }}'
   tags:
     - tdarr_node
 
