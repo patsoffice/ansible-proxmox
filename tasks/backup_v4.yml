@@ -44,13 +44,33 @@
     access_time: preserve
     modification_time: preserve
 
+- name: create the directory for the backup script
+  ansible.builtin.file:
+    path: /opt/bin
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: copy the backup script
   ansible.builtin.template:
     src: 'backup.sh'
-    dest: '/opt/backup.sh'
+    dest: '/opt/bin/backup.sh'
     mode: 0755
     owner: root
     group: root
+
+- name: check if old backup script exists
+  ansible.builtin.stat:
+    path: /opt/backup.sh
+  register: old_backup_script
+
+- name: remove old backup script
+  ansible.builtin.file:
+    path: /opt/backup.sh
+    state: absent
+  when: old_backup_script.stat.exists
+  changed_when: false
 
 - name: Creates a backup cron file under /etc/cron.d
   ansible.builtin.cron:
@@ -58,7 +78,7 @@
     minute: '0'
     hour: '0'
     user: '{{ backup_owner }}'
-    job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/backup.sh'
+    job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/bin/backup.sh'
     cron_file: backup
 
 - name: Add a MAILTO variable
