@@ -192,6 +192,8 @@ proxmox_hosts:
           - 'lxc.cgroup2.devices.allow: c 226:* rwm'
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
           - 'lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file'
+        additional_vars:
+          username: 'tdarr-node-{{ tdarr_node2.vmid }}'
         config_task: 'tdarr_node'
       - hostname: '{{ transmission.hostname }}'
         vmid: '{{ transmission.vmid }}'
@@ -377,11 +379,13 @@ proxmox_hosts:
           - 'lxc.cgroup2.devices.allow: c 226:* rwm'
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
           - 'lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file'
+        additional_vars:
+          username: 'tdarr-node-{{ tdarr_node.vmid }}'
         config_task: 'tdarr_node'
       - hostname: '{{ tdarr_server.hostname }}'
         vmid: '{{ tdarr_server.vmid }}'
         password: '{{ tdarr_server.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 4096
         swap: 4096
@@ -466,8 +470,8 @@ proxmox_hosts:
         onboot: true
         ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
-        memory: 1024
-        swap: 1024
+        memory: 2048
+        swap: 2048
         storage: 'local-zfs'
         rootfs_size: 16
         features:

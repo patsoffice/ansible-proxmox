@@ -35,8 +35,8 @@ syncthing_go_url: https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
 # Versions come from https://github.com/Tautulli/Tautulli/releases
 tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.14.2.tar.gz
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
-tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.18.02/linux_x64/Tdarr_Node.zip
-tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.18.02/linux_x64/Tdarr_Server.zip
+tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Node.zip
+tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.17.01/linux_x64/Tdarr_Server.zip
 # Tomcat versions come from https://tomcat.apache.org/download-90.cgi
 tomcat_core_dist_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
 # Transmission versions come from https://github.com/transmission/transmission/releases

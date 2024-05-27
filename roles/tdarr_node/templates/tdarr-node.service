@@ -3,7 +3,7 @@ Description=Tdarr Node Daemon
 After=network.target
 
 [Service]
-User=tdarr
+User={{ additional_vars.username }}
 Group=media
 
 Type=simple

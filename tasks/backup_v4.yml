@@ -2,7 +2,6 @@
   ansible.builtin.file:
     path: '{{ backup_path_v4 }}/{{ backup_dir_name }}'
     state: directory
-    recurse: true
     owner: '{{ backup_owner }}'
     group: '{{ backup_group }}'
     mode: '0770'

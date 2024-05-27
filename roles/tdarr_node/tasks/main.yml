@@ -2,6 +2,7 @@
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
+      - ffmpeg
       - freeipa-client
       - handbrake-cli
       - intel-opencl-icd
@@ -17,7 +18,7 @@
 
 - import_tasks: idm_client_setup.yml
   vars:
-    username: tdarr
+    username: '{{ additional_vars.username }}'
     groupname: media
     homedirectory: /opt/tdarr
     loginshell: /usr/bin/bash
@@ -32,7 +33,7 @@
 
 - import_tasks: idm_systemd_user_setup.yml
   vars:
-    username: tdarr
+    username: '{{ additional_vars.username }}'
     groupname: media
   tags:
     - tdarr_node
@@ -40,17 +41,20 @@
 - import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
+      - path: '/opt/tdarr'
+        owner: '{{ additional_vars.username }}'
+        group: '{{ additional_vars.username }}'
       - path: '/opt/tdarr/Tdarr_Node'
         owner: root
         group: root
       - path: '/opt/tdarr/Tdarr_Node/assets/app/plugins'
-        owner: tdarr
+        owner: '{{ additional_vars.username }}'
         group: media
       - path: '/opt/tdarr/configs'
-        owner: tdarr
+        owner: '{{ additional_vars.username }}'
         group: media
       - path: '/opt/tdarr/logs'
-        owner: tdarr
+        owner: '{{ additional_vars.username }}'
         group: media
     mountpoints:
       - src: '{{ movies_host_v4 }}:{{ movies_path_v4 }}'
@@ -142,7 +146,7 @@
   tags:
     - tdarr_node
 
-- import_tasks: systemd_unit.yml
+- import_tasks: systemd_unit_template.yml
   vars:
     systemd_unit: 'tdarr-node.service'
     state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'

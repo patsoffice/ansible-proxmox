@@ -1,18 +1,39 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: media
-    gid: '{{ media_gid }}'
-    username: tdarr
-    uid: '{{ transcode_uid }}'
     packages:
-    - nfs-common
-    - rdiff-backup
-    - unzip
+      - freeipa-client
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - rdiff-backup
+      - unzip
   tags:
     - tdarr_server
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: tdarr
+    groupname: media
+    homedirectory: /opt/tdarr
+    loginshell: /usr/bin/bash
+  tags:
+    - tdarr_server
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - tdarr_server
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: tdarr
+    groupname: media
+  tags:
+    - tdarr_server
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: '/opt/tdarr/Tdarr_Server'
@@ -21,32 +42,30 @@
       - path: '/opt/tdarr/server'
         owner: root
         group: root
+      - path: '/opt/tdarr/server/Tdarr'
+        owner: tdarr
+        group: tdarr
       - path: '/opt/tdarr/configs'
         owner: tdarr
-        group: media
+        group: tdarr
       - path: '/opt/tdarr/logs'
         owner: tdarr
-        group: media
+        group: tdarr
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
-      - src: '{{ movies_host }}:{{ movies_path }}'
+        mode: '0770'
+        owner: tdarr
+        group: tdarr
+      - src: '{{ movies_host_v4 }}:{{ movies_path_v4 }}'
         dest: /movies
         mode: '0775'
-        owner: '{{ movies_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ tv_host }}:{{ tv_path }}'
+      - src: '{{ tv_host_v4 }}:{{ tv_path_v4 }}'
         dest: /tv
         mode: '0775'
-        owner: '{{ tv_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ transcode_host }}:{{ transcode_path }}'
+      - src: '{{ transcode_host_v4 }}:{{ transcode_path_v4 }}'
         dest: /opt/tdarr/transcode-cache
         mode: '0775'
-        owner: '{{ transcode_uid }}'
-        group: '{{ media_gid }}'
   tags:
     - tdarr_server
 
@@ -136,8 +155,10 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/tdarr/ /opt/tdarr/server/Tdarr
+    cmd: rdiff-backup --api-version 201 --force restore /backups/tdarr/ /opt/tdarr/server/Tdarr/
   ignore_errors: true
+  become: true
+  become_user: tdarr
   when: not tdarr_db2.stat.exists
   tags:
     - tdarr_server
@@ -157,10 +178,13 @@
   tags:
     - tdarr_server
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/opt/tdarr/server/Tdarr'
     backup_dest: '/backups/tdarr'
+    backup_dir_name: tdarr
+    backup_owner: tdarr
+    backup_group: tdarr
   tags:
     - tdarr_server
 
