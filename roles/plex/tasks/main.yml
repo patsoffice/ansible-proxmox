@@ -143,7 +143,7 @@
   tags:
     - plex
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: /config
     backup_dest: /backups/plex
