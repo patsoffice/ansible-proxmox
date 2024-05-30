@@ -14,71 +14,124 @@
   tags:
     - plex
 
+- name: create the systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/plexmediaserver.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    - plex
+
+- name: copy the service file to systemd's location
+  ansible.builtin.copy:
+    src: override.conf
+    dest: /etc/systemd/system/plexmediaserver.service.d/override.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: systemd_service_unit_override
+  tags:
+    - plex
+
+- name: Enable the service and set the state
+  ansible.builtin.systemd:
+    daemon_reload: '{{ systemd_service_unit_override.changed }}'
+  tags:
+    - plex
+
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
       - apt-transport-https
+      - freeipa-client
+      - kstart
       - gnupg
       - intel-opencl-icd
       - nfs-common
+      - nfs4-acl-tools
       - ocl-icd-libopencl1
-      - plexmediaserver
       - rdiff-backup
       - software-properties-common
       - va-driver-all
   tags:
     - plex
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
   vars:
-    appdirs:
-      - path: /transcode
-        owner: plex
-        group: plex
-    mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
-        dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
-      - src: '{{ movies_host }}:{{ movies_path }}'
-        dest: /mnt/movies
-        mode: '0775'
-        owner: '{{ movies_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ music_host }}:{{ music_path }}'
-        dest: /mnt/music
-        mode: '0775'
-        owner: '{{ music_uid }}'
-        group: '{{ media_gid }}'
-      - src: '{{ tv_host }}:{{ tv_path }}'
-        dest: /mnt/tv
-        mode: '0775'
-        owner: '{{ tv_uid }}'
-        group: '{{ media_gid }}'
+    username: plexmediaserver
+    groupname: media
+    homedirectory: /plex
+    loginshell: /usr/bin/bash
   tags:
     - plex
 
-- name: Check that /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml exists
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - plex
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: plexmediaserver
+    groupname: media
+  tags:
+    - plex
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: plexmediaserver
+        group: media
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        owner: plexmediaserver
+        group: media
+      - src: '{{ live_tv_host_v4 }}:{{ live_tv_path_v4 }}'
+        dest: /mnt/live-tv
+        mode: '0775'
+      - src: '{{ movies_host_v4 }}:{{ movies_path_v4 }}'
+        dest: /mnt/movies
+        mode: '0775'
+      - src: '{{ music_host_v4 }}:{{ music_path_v4 }}'
+        dest: /mnt/music
+        mode: '0775'
+      - src: '{{ plex_transcode_host_v4 }}:{{ plex_transcode_path_v4 }}'
+        dest: /transcode
+        owner: plexmediaserver
+        group: media
+        mode: '0775'
+      - src: '{{ tv_host_v4 }}:{{ tv_path_v4 }}'
+        dest: /mnt/tv
+        mode: '0775'
+  tags:
+    - plex
+
+- name: Check that /config/Library/Application Support/Plex Media Server/Preferences.xml exists
   ansible.builtin.stat:
-    path: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+    path: /config/Library/Application Support/Plex Media Server/Preferences.xml
   register: preferences_xml
   tags:
     - plex
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/plex/ /var/lib/plexmediaserver
+    cmd: rdiff-backup --api-version 201 --force restore /backups/plex/ /config/
   ignore_errors: true
+  become: true
+  become_user: plexmediaserver
   when: not preferences_xml.stat.exists
   tags:
     - plex
 
-- name: Start and enable the service
-  ansible.builtin.systemd:
-    state: started
-    daemon_reload: true
-    enabled: true
+- name: install Plex Media Server
+  ansible.builtin.apt:
     name: plexmediaserver
+    state: present
   tags:
     - plex
 
@@ -92,7 +145,10 @@
 
 - import_tasks: backup.yml
   vars:
-    backup_src: /var/lib/plexmediaserver
+    backup_src: /config
     backup_dest: /backups/plex
+    backup_dir_name: plex
+    backup_owner: plexmediaserver
+    backup_group: media
   tags:
     - plex
