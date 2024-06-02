@@ -431,7 +431,7 @@ proxmox_hosts:
         vmid: '{{ octoprint.vmid }}'
         password: '{{ octoprint.password }}'
         unprivileged: false
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 512

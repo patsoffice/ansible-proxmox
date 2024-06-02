@@ -8,7 +8,7 @@ Environment="LC_ALL=C.UTF-8"
 Environment="LANG=C.UTF-8"
 Type=exec
 User=octoprint
-ExecStart=/home/octoprint/Octoprint/venv/bin/octoprint --basedir /config
+ExecStart=/opt/python/bin/octoprint --basedir /config
 
 [Install]
 WantedBy=multi-user.target
