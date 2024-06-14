@@ -24,7 +24,7 @@
     path: '/etc/security/keytabs/{{ username }}.keytab'
     state: file
     owner: '{{ username }}'
-    group: '{{ groupname }}'
+    group: '{{ groupname | default(username) }}'
     mode: '600'
 
 - name: get uid of {{ username }}

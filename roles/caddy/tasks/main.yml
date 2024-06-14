@@ -16,22 +16,42 @@
 
 - import_tasks: ubuntu_setup.yml
   vars:
-    username: caddy
-    groupname: caddy
-    uid: '{{ caddy_uid }}'
-    gid: '{{ caddy_gid }}'
     packages:
       - apt-transport-https
+      - freeipa-client
       - gnupg
       - jq
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
       - software-properties-common
       - xcaddy
   tags:
     - caddy
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: caddy
+    password: '{{ caddy.password }}'
+    homedirectory: /config
+    loginshell: /usr/bin/bash
+  tags:
+    - caddy
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - caddy
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: caddy
+  tags:
+    - caddy
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /opt
@@ -46,10 +66,11 @@
         group: caddy
         mode: '0700'
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: caddy
+        group: caddy
   tags:
     - caddy
 
@@ -87,6 +108,14 @@
   ansible.builtin.get_url:
     url: '{{ caddy_go_url }}'
     dest: /tmp/go.tar.gz
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - caddy
+
+- name: Remove the old go installation
+  ansible.builtin.file:
+    path: /opt/go
+    state: absent
   when: go_web_version != go_file_version.stdout
   tags:
     - caddy
@@ -148,8 +177,9 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/caddy/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/caddy/ /config/
   ignore_errors: true
+  become_user: caddy
   when: not caddyfile.stat.exists
   tags:
     - caddy
@@ -178,5 +208,8 @@
   vars:
     backup_src: '/config'
     backup_dest: '/backups/caddy'
+    backup_dir_name: caddy
+    backup_owner: caddy
+    backup_group: caddy
   tags:
     - caddy

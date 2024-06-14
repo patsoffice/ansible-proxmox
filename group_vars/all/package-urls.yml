@@ -1,7 +1,7 @@
 ---
 # https://github.com/caddyserver/caddy/releases
-caddy_version: v2.7.6
-caddy_go_url: https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+caddy_version: v2.8.4
+caddy_go_url: https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
 caddy_dns_cloudflare: github.com/caddy-dns/cloudflare
 caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
