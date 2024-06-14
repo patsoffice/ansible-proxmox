@@ -1,6 +1,6 @@
 #!/bin/sh
 # script to check for completed torrents and stop and remove them
-
+exit 0
 TORRENTLIST=`/opt/transmission/bin/transmission-remote --list | sed -e '1d;$d;s/^ *//' | cut -f1 -d' '`
 
 for TORRENTID in $TORRENTLIST

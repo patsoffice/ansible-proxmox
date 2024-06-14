@@ -59,6 +59,14 @@
   tags:
     - syncthing
 
+- name: Remove the go installation
+  ansible.builtin.file:
+    path: /opt/go
+    state: absent
+  when: go_web_version != go_file_version.stdout
+  tags:
+    - syncthing
+
 - name: Extract the go tarball
   ansible.builtin.unarchive:
     src: /tmp/go.tar.gz
