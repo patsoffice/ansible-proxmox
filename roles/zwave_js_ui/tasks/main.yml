@@ -1,33 +1,55 @@
 ---
 - import_tasks: ubuntu_setup.yml
   vars:
-    groupname: zwavejs
-    username: zwavejs
-    groupnames:
-      - tty
-      - dialout
     packages:
       - binutils
+      - freeipa-client
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
       - unzip
   tags:
     - zwave_js_ui
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: zwave
+    groupname: zwave
+    password: '{{ zwave_js_ui.password }}'
+    homedirectory: /usr/src/app
+    loginshell: /usr/bin/bash
+  tags:
+    - zwave_js_ui
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
-      - path: /config
-        owner: zwavejs
-        group: zwavejs
+      - path: /usr/src/app
+        owner: zwave
+        group: zwave
       - path: /opt/zwave-js-ui
         owner: root
         group: root
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: zwave
+        group: zwave
+  tags:
+    - zwave_js_ui
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - zwave_js_ui
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: zwave
+    groupname: zwave
   tags:
     - zwave_js_ui
 
@@ -83,18 +105,39 @@
   tags:
     - zwave_js_ui
 
-- name: Check that /config/store/settings.json exists
+- name: Set the zwave-js-ui version.txt file
+  ansible.builtin.template:
+    src: version.txt
+    dest: /opt/zwave-js-ui/version.txt
+    mode: 0644
+    owner: root
+    group: root
+  when: web_version != installed_version
+  tags:
+    - zwave_js_ui
+
+- name: Check that /usr/src/app/store/settings.json exists
   ansible.builtin.stat:
-    path: /config/store/settings.json
+    path: /usr/src/app/store/settings.json
   register: settings_json
   tags:
     - zwave_js_ui
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/zwave-js-ui/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/zwave-js-ui/ /usr/src/app/
   ignore_errors: true
+  become: true
+  become_user: zwave
   when: not settings_json.stat.exists
+  tags:
+    - zwave_js_ui
+
+- name: Change dev node group
+  ansible.builtin.file:
+    path: /dev/z-wave
+    state: file
+    group: zwave
   tags:
     - zwave_js_ui
 
@@ -113,9 +156,12 @@
   tags:
     - zwave_js_ui
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
-    backup_src: '/config'
+    backup_src: '/usr/src/app'
     backup_dest: '/backups/zwave-js-ui'
+    backup_dir_name: zwave-js-ui
+    backup_owner: zwave
+    backup_group: zwave
   tags:
     - zwave_js_ui

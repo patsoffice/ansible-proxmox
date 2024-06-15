@@ -53,8 +53,8 @@
     mountpoints:
       - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        owner: octoprint
+        group: octoprint
   tags:
     - octoprint
 

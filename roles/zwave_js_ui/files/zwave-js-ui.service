@@ -4,12 +4,12 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=zwavejs
-Group=zwavejs
+User=zwave
+Group=zwave
 UMask=0002
 
 Type=simple
-WorkingDirectory=/config
+WorkingDirectory=/usr/src/app
 ExecStart=/opt/zwave-js-ui/zwave-js-ui-linux
 TimeoutStopSec=20
 KillMode=process

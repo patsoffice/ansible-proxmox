@@ -14,4 +14,4 @@ if [ $status != 0 ]; then
 fi
 
 #Remove incremental backup files older than one month
-rdiff-backup --api-version 201 --new remove increments --older-than 1M {{ backup_dest }} >>/var/log/backup.log
+rdiff-backup --api-version 201 --new --force remove increments --older-than 1M {{ backup_dest }} >>/var/log/backup.log
