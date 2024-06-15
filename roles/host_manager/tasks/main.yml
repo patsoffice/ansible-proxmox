@@ -38,6 +38,7 @@
     proxmox_internal_dns:
       container_hostname: '{{ item }}.{{ unbound_internal_domains[0] }}'
       container_ip: '{{ proxmox_hosts[item].api_host }}'
+    proxmox_host_tasks: '{{ proxmox_hosts[item].host_tasks | default([]) }}'
   loop: '{{ host_keys }}'
   no_log: true
   changed_when: false

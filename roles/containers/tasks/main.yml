@@ -1,12 +1,12 @@
 ---
 - name: Check if containers are present
-  set_fact:
+  ansible.builtin.set_fact:
     has_containers: "{{ proxmox_containers != '' | default(false) }}"
   tags:
     - containers
 
 - name: Install the package "python3-proxmoxer"
-  apt:
+  ansible.builtin.apt:
     name: python3-proxmoxer
   when: has_containers
   tags:
@@ -26,8 +26,14 @@
   tags:
     - containers
 
+- name: run the host tasks
+  ansible.builtin.include_tasks: '{{ item }}.yml'
+  loop: '{{ proxmox_host_tasks }}'
+  tags:
+    - containers
+
 - name: run container task
-  include_tasks: container.yml
+  ansible.builtin.include_tasks: container.yml
   when: item.config_task is defined and ansible_run_tags != ['all'] and item.config_task in ansible_run_tags and item.config_task not in ansible_skip_tags
   loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
   no_log: true

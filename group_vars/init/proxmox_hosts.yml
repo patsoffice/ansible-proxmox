@@ -13,6 +13,8 @@ proxmox_hosts:
         compression: lz4
         dnodesize: auto
         xattr: sa
+    host_tasks:
+      - zfsnap
     containers:
       - hostname: '{{ nas0.hostname }}'
         vmid: '{{ nas0.vmid }}'

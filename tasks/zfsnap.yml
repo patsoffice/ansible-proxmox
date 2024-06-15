@@ -1,0 +1,46 @@
+---
+- name: install git
+  ansible.builtin.apt:
+    pkg: git
+  tags:
+    - containers
+
+- name: checkout zfsnap
+  ansible.builtin.git:
+    repo: https://github.com/zfsnap/zfsnap.git
+    dest: /usr/local/src/zfsnap
+    version: master
+    recursive: true
+  tags:
+    - containers
+
+- name: create a symlink to install zfsnap
+  ansible.builtin.file:
+    src: /usr/local/src/zfsnap/sbin/zfsnap.sh
+    dest: /usr/local/sbin/zfsnap
+    owner: root
+    group: root
+    state: link
+  tags:
+    - containers
+
+- name: cron to snapshot hourly
+  ansible.builtin.cron:
+    name: create snapshots
+    minute: '5'
+    user: root
+    job: '/usr/local/sbin/zfsnap snapshot -a 1m -r tank'
+    cron_file: zfsnap_snapshot
+  tags:
+    - containers
+
+- name: cron to destroy snapshots daily
+  ansible.builtin.cron:
+    name: destroy snapshots
+    minute: '0'
+    hour: '0'
+    user: root
+    job: '/usr/local/sbin/zfsnap destroy -r tank'
+    cron_file: zfsnap_destroy
+  tags:
+    - containers
