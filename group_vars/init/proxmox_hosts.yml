@@ -39,7 +39,7 @@ proxmox_hosts:
       - hostname: '{{ tailscale001.hostname }}'
         vmid: '{{ tailscale001.vmid }}'
         password: '{{ tailscale001.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 1024
@@ -145,7 +145,7 @@ proxmox_hosts:
       - hostname: '{{ tailscale002.hostname }}'
         vmid: '{{ tailscale002.vmid }}'
         password: '{{ tailscale002.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 1024
@@ -349,7 +349,7 @@ proxmox_hosts:
       - hostname: '{{ tailscale005.hostname }}'
         vmid: '{{ tailscale005.vmid }}'
         password: '{{ tailscale005.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 1024
@@ -584,7 +584,7 @@ proxmox_hosts:
       - hostname: '{{ tailscale006.hostname }}'
         vmid: '{{ tailscale006.vmid }}'
         password: '{{ tailscale006.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 1024
