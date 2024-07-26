@@ -1,6 +1,6 @@
 [Unit]
 Description=Sabnzbd Server Daemon
-After=network.target
+After=sabnzbd-kerberos-ticket-refresher.service
 
 [Service]
 User=sabnzbd

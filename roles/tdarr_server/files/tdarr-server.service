@@ -1,6 +1,6 @@
 [Unit]
 Description=Tdarr Server Daemon
-After=network.target
+After=tdarr-kerberos-ticket-refresher.service
 
 [Service]
 User=tdarr

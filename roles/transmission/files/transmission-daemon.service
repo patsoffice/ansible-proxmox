@@ -1,7 +1,7 @@
 [Unit]
 Description=Transmission BitTorrent Daemon
 Wants=network-online.target
-After=network-online.target
+After=transmission-kerberos-ticket-refresher.service
 
 [Service]
 User=transmission

@@ -1,6 +1,6 @@
 [Unit]
 Description=Tdarr Node Daemon
-After=network.target
+After={{ additional_vars.username }}-kerberos-ticket-refresher.service
 
 [Service]
 User={{ additional_vars.username }}

@@ -1,6 +1,6 @@
 [Unit]
 Description=Home Assistant
-After=network-online.target
+After=home_assistant-kerberos-ticket-refresher.service
 
 [Service]
 User=home_assistant

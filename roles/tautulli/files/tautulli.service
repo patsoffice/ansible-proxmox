@@ -1,6 +1,6 @@
 [Unit]
 Description=Tautulli Dashboard
-After=network.target
+After=tautulli-kerberos-ticket-refresher.service
 
 [Service]
 User=tautulli

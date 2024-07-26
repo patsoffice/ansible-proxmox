@@ -1,13 +1,17 @@
 [Unit]
 Description=The snappy web interface for your 3D printer
-After=network-online.target
+After=octoprint-kerberos-ticket-refresher.service
 Wants=network-online.target
 
 [Service]
+PermissionsStartOnly=true
+User=octoprint
+Group=octoprint
+
+Type=simple
 Environment="LC_ALL=C.UTF-8"
 Environment="LANG=C.UTF-8"
-Type=exec
-User=octoprint
+ExecStartPre=/usr/bin/chgrp octoprint /dev/ttyACM0
 ExecStart=/opt/python/bin/octoprint --basedir /config
 
 [Install]
