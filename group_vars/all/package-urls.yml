@@ -12,23 +12,23 @@ drawio_war_url: https://github.com/jgraph/drawio/releases/download/v24.5.5/draw.
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.12.2
 # https://github.com/home-assistant/core/releases
-homeassistant_version: 2024.6.4
+homeassistant_version: 2024.7.3
 # https://github.com/Lidarr/Lidarr/releases
-lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.3.3.4204/Lidarr.master.2.3.3.4204.linux-core-x64.tar.gz
+lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.4.3.4248/Lidarr.master.2.4.3.4248.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
-netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.79.tar.gz
+netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.80.tar.gz
 # https://github.com/sct/overseerr/releases
 overseer_src_url: https://github.com/sct/overseerr/archive/refs/tags/v1.33.2.tar.gz
 # https://github.com/pi-hole/pi-hole/releases
-pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.2.tar.gz
+pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.3.tar.gz
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.5.tar.gz
 # https://github.com/Radarr/Radarr/releases
-radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.7.0.8882/Radarr.master.5.7.0.8882.linux-core-x64.tar.gz
+radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.8.3.8933/Radarr.master.5.8.3.8933.linux-core-x64.tar.gz
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.3.2/SABnzbd-4.3.2-src.tar.gz
 # https://github.com/Sonarr/Sonarr/releases
-sonarr_master_url: https://github.com/Sonarr/Sonarr/releases/download/v4.0.5.1710/Sonarr.main.4.0.5.1710.linux-x64.tar.gz
+sonarr_master_url: https://github.com/Sonarr/Sonarr/releases/download/v4.0.8.1874/Sonarr.main.4.0.8.1874.linux-x64.tar.gz
 # https://github.com/syncthing/syncthing/releases
 syncthing_version: v1.27.9
 syncthing_go_url: https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
@@ -44,4 +44,4 @@ transmission_version: 4.0.6
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.20.0.tar.gz
 # https://github.com/zwave-js/zwave-js-ui/releases
-zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.14.4/zwave-js-ui-v9.14.4-linux.zip
+zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.16.2/zwave-js-ui-v9.16.2-linux.zip
