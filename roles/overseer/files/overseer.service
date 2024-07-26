@@ -1,8 +1,12 @@
 [Unit]
 Description=Overseer
-After=syslog.target network.target
+After=overseer-kerberos-ticket-refresher.service
 
 [Service]
+User=overseer
+Group=overseer
+UMask=0022
+
 ExecStart=/usr/bin/yarn start
 Restart=on-failure
 KillSignal=SIGINT

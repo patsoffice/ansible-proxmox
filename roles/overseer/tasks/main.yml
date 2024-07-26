@@ -20,29 +20,52 @@
     packages:
       - apt-transport-https
       - build-essential
+      - freeipa-client
       - gnupg
-      - nodejs
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
+      - nodejs
       - python3
       - rdiff-backup
       - software-properties-common
   tags:
     - overseer
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: overseer
+    groupname: media
+    password: '{{ overseer.password }}'
+    homedirectory: /opt/overseer
+    loginshell: /usr/bin/bash
+  tags:
+    - overseer
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - overseer
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: overseer
+  tags:
+    - overseer
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
-      - path: /opt
-        owner: root
-        group: root
       - path: /opt/overseer
         owner: root
         group: root
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: overseer
+        group: overseer
   tags:
     - overseer
 
@@ -136,6 +159,15 @@
   tags:
     - overseer
 
+- name: Set ownership of the config files
+  ansible.builtin.file:
+    path: /opt/overseer/config
+    owner: overseer
+    group: overseer
+    recurse: yes
+  tags:
+    - overseer
+
 - name: Check that /config/settings.js exists
   ansible.builtin.stat:
     path: /opt/overseer/config/settings.json
@@ -145,7 +177,7 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/overseer/ /opt/overseer/config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/overseer/ /opt/overseer/config
   ignore_errors: true
   when: not settings_json.stat.exists
   tags:
@@ -166,9 +198,12 @@
   tags:
     - overseer
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/opt/overseer/config'
     backup_dest: '/backups/overseer'
+    backup_dir_name: overseer
+    backup_owner: overseer
+    backup_group: overseer
   tags:
     - overseer
