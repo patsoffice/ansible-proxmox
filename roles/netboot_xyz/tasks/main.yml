@@ -5,23 +5,16 @@
       - ansible
       - git
       - apache2
-      - nfs-common
-      - rdiff-backup
       - tftpd-hpa
   tags:
     - netboot_xyz
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /opt/netboot.xyz
         owner: root
         group: root
-    mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
-        dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
   tags:
     - netboot_xyz
 
