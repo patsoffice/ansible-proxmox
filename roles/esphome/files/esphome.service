@@ -1,9 +1,10 @@
 [Unit]
 Description=ESPHome Dashboard
-After=network.target
+After=esphome-kerberos-ticket-refresher.service
 
 [Service]
 User=esphome
+Group=esphome
 
 Environment=PATH=/opt/esphome/ESPHome/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/esphome/ESPHome/venv/bin/esphome dashboard /config
