@@ -567,10 +567,10 @@ proxmox_hosts:
         reverse_proxy_service: node_red
         reverse_proxy_hostname: '{{ node_red.reverse_proxy_hostname }}'
         service_port: 1880
-      - hostname: '{{ redis.hostname }}'
-        vmid: '{{ redis.vmid }}'
-        password: '{{ redis.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+      - hostname: '{{ valkey.hostname }}'
+        vmid: '{{ valkey.vmid }}'
+        password: '{{ valkey.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 1024
         swap: 1024
@@ -580,7 +580,7 @@ proxmox_hosts:
           - 'nesting=1'
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
-        config_task: redis
+        config_task: valkey
       - hostname: '{{ tailscale006.hostname }}'
         vmid: '{{ tailscale006.vmid }}'
         password: '{{ tailscale006.password }}'

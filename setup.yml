@@ -131,12 +131,6 @@
   roles:
     - radarr
 
-- hosts: redis_hosts
-  gather_facts: yes
-  remote_user: root
-  roles:
-    - redis
-
 - hosts: sabnzbd_hosts
   gather_facts: yes
   remote_user: root
@@ -190,6 +184,12 @@
   remote_user: root
   roles:
     - transmission
+
+- hosts: valkey_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - valkey
 
 - hosts: zwave_js_ui_hosts
   gather_facts: yes

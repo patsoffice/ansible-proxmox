@@ -1,0 +1,153 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - build-essential
+      - cmake
+      - freeipa-client
+      - git
+      - kstart
+      - libssl-dev
+      - libsystemd-dev
+      - nfs-common
+      - nfs4-acl-tools
+      - pkg-config
+      - rdiff-backup
+      - software-properties-common
+  tags:
+    - valkey
+
+- name: Check that /opt/valkey/bin/valkey-server exists
+  ansible.builtin.stat:
+    path: /opt/valkey/bin/valkey-server
+  register: valkey_server
+  tags:
+    - valkey
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/valkey/bin/valkey-server --version 2>&1 | awk '{ print $2 }'  | sed 's/v=//'"
+  register: file_version
+  when: valkey_server.stat.exists
+  changed_when: false
+  tags:
+    - valkey
+
+- name: Set a default valkey file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - valkey
+
+- name: checkout valkey
+  ansible.builtin.git:
+    repo: https://github.com/valkey-io/valkey.git
+    dest: /opt/valkey-src
+    version: '{{ valkey_version }}'
+    recursive: true
+  when: valkey_version != file_version.stdout
+  tags:
+    - valkey
+
+- name: build and install valkey
+  ansible.builtin.shell:
+    cmd: |
+      make MALLOC=libc BUILD_TLS=yes USE_SYSTEMD=yes CFLAGS="-DUSE_PROCESSOR_CLOCK" &&
+      make PREFIX=/opt/valkey install
+    chdir: /opt/valkey-src
+  when: valkey_version != file_version.stdout
+  tags:
+    - valkey
+
+- name: remove the build directory
+  ansible.builtin.file:
+    path: /opt/valkey-src
+    state: absent
+  when: valkey_version != file_version.stdout
+  tags:
+    - valkey
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: valkey
+    password: '{{ valkey.password }}'
+    homedirectory: /config
+    loginshell: /usr/bin/bash
+  tags:
+    - valkey
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - valkey
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: valkey
+    wanted_by_unit: transmission-daemon.service
+  tags:
+    - valkey
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /opt/valkey/etc
+        owner: root
+        group: root
+        mode: "0755"
+      - path: /config
+        owner: valkey
+        group: valkey
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0700'
+        owner: valkey
+        group: valkey
+  tags:
+    - valkey
+
+- name: Check that /config/dump.rdb exists
+  ansible.builtin.stat:
+    path: /config/dump.rdb
+  register: dump_rdb
+  tags:
+    - valkey
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup --api-version 201 restore /backups/valkey/ /config
+  ignore_errors: true
+  when: not dump_rdb.stat.exists
+  tags:
+    - valkey
+
+- name: copy the config
+  ansible.builtin.copy:
+    src: valkey.conf
+    dest: /opt/valkey/etc/valkey.conf
+    mode: "0644"
+    owner: root
+    group: root
+  tags:
+    - valkey
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'valkey-server.service'
+    state: '{{ (valkey_version != file_version.stdout) | ternary("restarted", "started") }}'
+  tags:
+    - valkey
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: /config
+    backup_dest: /backups/valkey
+    backup_dir_name: valkey
+    backup_owner: valkey
+    backup_group: valkey
+  tags:
+    - valkey
