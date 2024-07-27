@@ -33,3 +33,9 @@
   ansible.builtin.apt:
     pkg: '{{ packages }}'
   when: packages is defined
+
+- name: apt remove packages
+  ansible.builtin.apt:
+    pkg: '{{ removed_packages }}'
+    state: absent
+  when: removed_packages is defined

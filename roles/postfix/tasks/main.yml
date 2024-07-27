@@ -61,6 +61,7 @@
       - "smtp_use_tls = yes"
       - "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject"
   no_log: true
+  changed_when: false
   tags:
     - postfix
 

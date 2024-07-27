@@ -2,13 +2,159 @@
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
-      - syslog-ng
+      - autoconf
+      - autoconf-archive
+      - build-essential
+      - freeipa-client
+      - git
+      - kstart
+      - libglib2.0-dev
+      - libjson-c-dev
+      - libssl-dev
+      - libsystemd-dev
+      - libtool
+      - nfs-common
+      - nfs4-acl-tools
+      - pkg-config
+      - rdiff-backup
   tags:
     - syslog_ng
 
-- name: Start and enable the service
-  ansible.builtin.systemd:
-    state: started
-    daemon_reload: true
-    enabled: true
-    name: syslog-ng
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: syslog-ng
+    password: '{{ syslog_ng.password }}'
+    homedirectory: /opt/syslog-ng
+    loginshell: /usr/bin/bash
+  tags:
+    - syslog_ng
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - syslog_ng
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: syslog-ng
+    wanted_by_unit: syslog-ng.service
+  tags:
+    - syslog_ng
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /opt/syslog-ng
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0770'
+        owner: syslog-ng
+        group: syslog-ng
+  tags:
+    - syslog_ng
+
+- name: Get syslog-ng URL version
+  ansible.builtin.set_fact:
+    web_version: "{{ syslog_ng_src_url | regex_search('download/syslog-ng-([\\d.]+)/', '\\1') | first }}"
+  tags:
+    - syslog_ng
+
+- name: Check that /opt/syslog-ng/sbin/syslog-ng exists
+  ansible.builtin.stat:
+    path: /opt/syslog-ng/sbin/syslog-ng
+  register: syslog_ng_server
+  tags:
+    - syslog_ng
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/syslog-ng/sbin/syslog-ng --version 2>&1 | grep Installer-Version | awk '{print $2}'"
+  register: file_version
+  when: syslog_ng_server.stat.exists
+  changed_when: false
+  tags:
+    - syslog_ng
+
+- name: Set a default syslog-ng file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - syslog_ng
+
+- name: Download latest syslog-ng
+  ansible.builtin.get_url:
+    url: '{{ syslog_ng_src_url }}'
+    dest: /opt/syslog-ng.tar.gz
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: Create the source directory
+  ansible.builtin.file:
+    path: /opt/syslog-ng-src
+    state: directory
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: Extract the syslog-ng tarball
+  ansible.builtin.unarchive:
+    src: /opt/syslog-ng.tar.gz
+    dest: /opt/syslog-ng-src
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/syslog-ng.tar.gz
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: build and install syslog-ng
+  ansible.builtin.shell:
+    cmd: |
+      ./configure --enable-ipv6 --prefix=/opt/syslog-ng &&
+      make &&
+      make install
+    chdir: /opt/syslog-ng-src
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: remove the build directory
+  ansible.builtin.file:
+    path: /opt/syslog-ng-src
+    state: absent
+  when: web_version != file_version.stdout
+  tags:
+    - syslog_ng
+
+- name: copy the config
+  ansible.builtin.copy:
+    src: syslog-ng.conf
+    dest: /opt/syslog-ng/etc/syslog-ng.conf
+    mode: "0644"
+    owner: root
+    group: root
+  register: syslog_ng_conf
+  tags:
+    - syslog_ng
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'syslog-ng.service'
+    state: '{{ (web_version != file_version.stdout) or syslog_ng_conf.changed | ternary("restarted", "started") }}'
+  tags:
+    - syslog_ng

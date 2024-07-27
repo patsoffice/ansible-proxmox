@@ -1,0 +1,18 @@
+[Unit]
+Description=System Logger Daemon
+After=network.target
+
+[Service]
+Type=notify
+AmbientCapabilities=CAP_CHOWN CAP_FOWNER CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_NET_BIND_SERVICE
+ExecStart=/opt/syslog-ng/sbin/syslog-ng -F --no-caps -p /run/syslogd.pid
+ExecReload=/bin/kill -HUP $MAINPID
+StandardOutput=null
+Restart=on-failure
+User=syslog-ng
+Group=syslog-ng
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target
+Alias=syslog.service

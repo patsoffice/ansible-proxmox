@@ -27,10 +27,11 @@
     group: '{{ groupname | default(username) }}'
     mode: '600'
 
-- name: get uid of {{ username }}
-  ansible.builtin.command: 'id -u {{ username }}'
+- name: get uid of {{ local_username | default(username) }}
+  ansible.builtin.command: 'id -u {{ local_username | default(username) }}'
   changed_when: false
   register: username_uid
+  when: uid is undefined
 
 - name: copy the service file to systemd's location
   ansible.builtin.template:
