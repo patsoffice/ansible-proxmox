@@ -17,26 +17,44 @@
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
-      - apt-transport-https
-      - gnupg
-      - grafana
+      - freeipa-client
+      - kstart
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
-      - software-properties-common
   tags:
     - grafana
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
   vars:
-    appdirs:
-      - path: /opt
-        owner: root
-        group: root
+    username: grafana-krb5
+    password: '{{ grafana.password }}'
+    homedirectory: /opt/grafana
+    loginshell: /usr/bin/bash
+  tags:
+    - grafana
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - grafana
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: grafana-krb5
+    local_username: grafana
+  tags:
+    - grafana
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: grafana
+        group: grafana
   tags:
     - grafana
 
@@ -49,18 +67,15 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/grafana/ /var/lib/grafana
+    cmd: rdiff-backup --api-version 201 --force restore /backups/grafana/ /var/lib/grafana
   ignore_errors: true
   when: not grafana_db.stat.exists
   tags:
     - grafana
 
-- name: Start and enable the service
-  ansible.builtin.systemd:
-    state: restarted
-    daemon_reload: true
-    enabled: true
-    name: grafana-server
+- name: Install grafana
+  ansible.builtin.apt:
+    pkg: grafana
   tags:
     - grafana
 
@@ -72,9 +87,25 @@
   tags:
     - grafana
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/var/lib/grafana'
     backup_dest: '/backups/grafana'
+    backup_dir_name: grafana
+    backup_owner: grafana-krb5
+    backup_group: grafana-krb5
+  tags:
+    - grafana
+
+- name: change ownership of the backup log file
+  ansible.builtin.file:
+    path: /var/log/backup.log
+    owner: grafana
+    group: grafana
+    mode: "0770"
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+  changed_when: false
   tags:
     - grafana

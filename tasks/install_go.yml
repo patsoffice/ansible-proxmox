@@ -1,0 +1,48 @@
+---
+- name: check if go_version is set
+  fail:
+    msg: "go_version not defined"
+  when: go_version is not defined
+
+- name: Check that /opt/go/bin/go exists
+  ansible.builtin.stat:
+    path: /opt/go/bin/go
+  register: go_bin
+
+- name: Get the installed go version
+  ansible.builtin.shell:
+    cmd: "/opt/go/bin/go version | awk -F'version ' '{print $2}' | awk '{print $1}' | sed 's/go//'"
+  register: go_file_version
+  when: go_bin.stat.exists
+  changed_when: false
+
+- name: Set a default go file version
+  ansible.builtin.set_fact:
+    go_file_version:
+      stdout: missing
+  when: go_file_version.stdout is undefined
+
+- name: Download go
+  ansible.builtin.get_url:
+    url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: /tmp/go.tar.gz
+  when: go_version != go_file_version.stdout
+
+- name: Remove the go installation
+  ansible.builtin.file:
+    path: /opt/go
+    state: absent
+  when: go_version != go_file_version.stdout
+
+- name: Extract the go tarball
+  ansible.builtin.unarchive:
+    src: /tmp/go.tar.gz
+    dest: /opt
+    remote_src: true
+  when: go_version != go_file_version.stdout
+
+- name: Remove the go tarball
+  ansible.builtin.file:
+    path: /opt/go.tar.gz
+    state: absent
+  when: go_version != go_file_version.stdout

@@ -21,66 +21,9 @@
   tags:
     - syncthing
 
-- name: Get Go URL version
-  ansible.builtin.set_fact:
-    go_web_version: "{{ syncthing_go_url | regex_search('/go([\\d.]+).linux-amd64.tar.gz', '\\1') | first }}"
-  tags:
-    - syncthing
-
-- name: Check that /opt/go/bin/go exists
-  ansible.builtin.stat:
-    path: /opt/go/bin/go
-  register: go_bin
-  tags:
-    - syncthing
-
-- name: Get the installed go version
-  ansible.builtin.shell:
-    cmd: "/opt/go/bin/go version | awk -F'version ' '{print $2}' | awk '{print $1}' | sed 's/go//'"
-  register: go_file_version
-  when: go_bin.stat.exists
-  changed_when: false
-  tags:
-    - syncthing
-
-- name: Set a default go file version
-  ansible.builtin.set_fact:
-    go_file_version:
-      stdout: 'missing'
-  when: go_file_version.stdout is undefined
-  tags:
-    - syncthing
-
-- name: Download go
-  ansible.builtin.get_url:
-    url: '{{ syncthing_go_url }}'
-    dest: /tmp/go.tar.gz
-  when: go_web_version != go_file_version.stdout
-  tags:
-    - syncthing
-
-- name: Remove the go installation
-  ansible.builtin.file:
-    path: /opt/go
-    state: absent
-  when: go_web_version != go_file_version.stdout
-  tags:
-    - syncthing
-
-- name: Extract the go tarball
-  ansible.builtin.unarchive:
-    src: /tmp/go.tar.gz
-    dest: /opt
-    remote_src: true
-  when: go_web_version != go_file_version.stdout
-  tags:
-    - syncthing
-
-- name: Remove the go tarball
-  ansible.builtin.file:
-    path: /opt/go.tar.gz
-    state: absent
-  when: go_web_version != go_file_version.stdout
+- import_tasks: install_go.yml
+  vars:
+    go_version: "{{ syncthing_go_version }}"
   tags:
     - syncthing
 

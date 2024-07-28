@@ -36,7 +36,7 @@
 - name: copy the service file to systemd's location
   ansible.builtin.template:
     src: kerberos-ticket-refresher.service
-    dest: '/etc/systemd/system/{{ username }}-kerberos-ticket-refresher.service'
+    dest: '/etc/systemd/system/{{ local_username | default(username) }}-kerberos-ticket-refresher.service'
     mode: 0644
     owner: root
     group: root
@@ -50,4 +50,4 @@
     state: '{{ refresher_service_unit.changed | ternary("restarted", "started") }}'
     daemon_reload: true
     enabled: true
-    name: '{{ username }}-kerberos-ticket-refresher.service'
+    name: '{{ local_username | default(username) }}-kerberos-ticket-refresher.service'

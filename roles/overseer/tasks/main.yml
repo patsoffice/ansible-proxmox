@@ -16,7 +16,6 @@
 
 - import_tasks: ubuntu_setup.yml
   vars:
-    shell: /usr/sbin/nologin
     packages:
       - apt-transport-https
       - build-essential
