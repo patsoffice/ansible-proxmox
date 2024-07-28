@@ -112,6 +112,14 @@ generic_host_dns:
     internal_ip_address: 10.13.5.2
 ```
 
+## all/syslog-ng.yml
+
+The `syslog-ng.yml` variables have information about the syslog-ng information.
+
+```yaml
+syslog_ng_host: syslog-ng.domain.com
+```
+
 ## all/unbound.yml
 
 The `unbound.yml` variables have information about the local domains hosted and where they stored. Unfortunately, we need to specify the hosts where DNS is running rather than just using the dns_hosts group.

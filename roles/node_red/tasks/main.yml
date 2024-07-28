@@ -22,32 +22,51 @@
     packages:
       - apt-transport-https
       - build-essential
-      - gnupg
-      - nodejs
+      - freeipa-client
+      - kstart
       - nfs-common
-      - python3
+      - nfs4-acl-tools
+      - nodejs
       - rdiff-backup
-      - software-properties-common
   tags:
     - node_red
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: node-red
+    password: '{{ node_red.password }}'
+    homedirectory: /config
+    loginshell: /usr/bin/bash
+  tags:
+    - node_red
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - node_red
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: node-red
+  tags:
+    - node_red
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
-        owner: node_red
-        group: node_red
-      - path: /opt
+        owner: node-red
+        group: node-red
+      - path: /opt/node_red
         owner: root
         group: root
-      - path: /opt/node_red
-        owner: node_red
-        group: node_red
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: node-red
+        group: node-red
   tags:
     - node_red
 
@@ -66,9 +85,15 @@
   tags:
     - node_red
 
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: node-red
+  tags:
+    - node_red
+
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/node_red/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/node-red/ /config
   ignore_errors: true
   when: not settings_js.stat.exists
   tags:
@@ -76,7 +101,7 @@
 
 - import_tasks: systemd_unit.yml
   vars:
-    systemd_unit: 'node-red.service'
+    systemd_unit: node-red.service
     state: '{{ node_red_install.changed | ternary("restarted", "started") }}'
   tags:
     - node_red
@@ -89,9 +114,12 @@
   tags:
     - node_red
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
     backup_src: '/config'
-    backup_dest: '/backups/node_red'
+    backup_dest: '/backups/node-red'
+    backup_dir_name: node_red
+    backup_owner: node-red
+    backup_group: node-red
   tags:
     - node_red

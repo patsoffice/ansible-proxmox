@@ -1,0 +1,15 @@
+---
+- name: "copy the syslog configuration for {{ syslog_identifier }}"
+  ansible.builtin.template:
+    src: rsyslog.conf
+    dest: "/etc/rsyslog.d/99-{{ syslog_identifier }}.conf"
+    mode: 0644
+    owner: root
+    group: root
+  register: rsyslog_conf
+
+- name: restart rsyslog
+  ansible.builtin.systemd:
+    state: restarted
+    name: rsyslog.service
+  when: rsyslog_conf.changed
