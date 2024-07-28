@@ -1,6 +1,6 @@
 [Unit]
 Description=Home Assistant
-After=home_assistant-kerberos-ticket-refresher.service
+After=syslog.target network.target
 
 [Service]
 User=home_assistant
@@ -10,6 +10,10 @@ WorkingDirectory=/config
 ExecStart=/opt/home_assistant/venv/bin/hass -c "/config"
 Restart=always
 RestartForceExitStatus=100
+
+SyslogIdentifier=home-assistant
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
