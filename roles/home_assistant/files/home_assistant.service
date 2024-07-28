@@ -1,6 +1,7 @@
 [Unit]
 Description=Home Assistant
-After=syslog.target network.target
+After=home_assistant-kerberos-ticket-refresher.service
+Requires=home_assistant-kerberos-ticket-refresher.service
 
 [Service]
 User=home_assistant

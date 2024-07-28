@@ -32,9 +32,21 @@
   tags:
     - containers
 
+# - name: debug
+#   ansible.builtin.debug:
+#     msg: "{{ item.config_task is defined and 'all' in ansible_run_tags }}: {{ item.config_task }}, {{ ansible_run_tags }}"
+#   loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
+#   tags:
+#     - containers
+
+# - name: pause
+#   ansible.builtin.pause:
+#   tags:
+#     - containers
+
 - name: run container task
   ansible.builtin.include_tasks: container.yml
-  when: item.config_task is defined and ansible_run_tags != ['all'] and item.config_task in ansible_run_tags and item.config_task not in ansible_skip_tags
+  when: (item.config_task is defined and "all" in ansible_run_tags) or (item.config_task is defined and item.config_task in ansible_run_tags and item.config_task not in ansible_skip_tags)
   loop: '{{ [] if proxmox_containers == "" else proxmox_containers }}'
   no_log: true
   tags:

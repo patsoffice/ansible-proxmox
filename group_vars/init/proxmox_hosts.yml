@@ -264,7 +264,7 @@ proxmox_hosts:
         vmid: '{{ dns0.vmid }}'
         container_ip: '{{ dns0.container_ip }}'
         password: '{{ dns0.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 512
@@ -415,7 +415,7 @@ proxmox_hosts:
         vmid: '{{ dns1.vmid }}'
         container_ip: '{{ dns1.container_ip }}'
         password: '{{ dns1.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
         memory: 512
         swap: 512

@@ -36,9 +36,9 @@
 - name: create the log file
   ansible.builtin.file:
     path: /var/log/backup.log
-    owner: '{{ backup_owner }}'
+    owner: '{{ cron_owner | default(backup_owner) }}'
     group: '{{ backup_group }}'
-    mode: '0770'
+    mode: '0660'
     state: touch
     access_time: preserve
     modification_time: preserve
@@ -76,7 +76,7 @@
     name: backup
     minute: '0'
     hour: '0'
-    user: '{{ backup_owner }}'
+    user: '{{ cron_user | default(backup_owner) }}'
     job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/bin/backup.sh'
     cron_file: backup
 

@@ -22,7 +22,7 @@
       - libexpat1-dev
       - libnghttp2-dev
       - libprotobuf-c-dev
-      - libssl3
+      - libssl-dev
       - make
       - protobuf-c-compiler
       - software-properties-common

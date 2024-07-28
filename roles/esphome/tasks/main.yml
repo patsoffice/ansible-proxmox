@@ -34,6 +34,7 @@
 - import_tasks: idm_systemd_user_setup.yml
   vars:
     username: esphome
+    wanted_by_unit: esphome.service
   tags:
     - esphome
 
@@ -71,6 +72,7 @@
     chdir: /opt/esphome/ESPHome/
   become: true
   become_user: esphome
+  changed_when: false
   tags:
     - esphome
 

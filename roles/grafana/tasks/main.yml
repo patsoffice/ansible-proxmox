@@ -94,18 +94,6 @@
     backup_dir_name: grafana
     backup_owner: grafana-krb5
     backup_group: grafana-krb5
-  tags:
-    - grafana
-
-- name: change ownership of the backup log file
-  ansible.builtin.file:
-    path: /var/log/backup.log
-    owner: grafana
-    group: grafana
-    mode: "0770"
-    state: touch
-    access_time: preserve
-    modification_time: preserve
-  changed_when: false
+    cron_owner: grafana
   tags:
     - grafana

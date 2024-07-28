@@ -102,18 +102,6 @@
     backup_dir_name: mqtt
     backup_owner: mqtt
     backup_group: mqtt
-  tags:
-    - mqtt
-
-- name: change ownership of the backup log file
-  ansible.builtin.file:
-    path: /var/log/backup.log
-    owner: mosquitto
-    group: mosquitto
-    mode: "0770"
-    state: touch
-    access_time: preserve
-    modification_time: preserve
-  changed_when: false
+    cron_user: mosquitto
   tags:
     - mqtt

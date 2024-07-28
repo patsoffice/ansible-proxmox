@@ -129,6 +129,7 @@
     chdir: /opt/home_assistant
   become: true
   become_user: home_assistant
+  changed_when: false
   tags:
     - home_assistant
 

@@ -17,7 +17,7 @@
 Description=Caddy
 Documentation=https://caddyserver.com/docs/
 After=caddy-kerberos-ticket-refresher.service
-Requires=network-online.target
+Requires=caddy-kerberos-ticket-refresher.service
 
 [Service]
 Type=notify

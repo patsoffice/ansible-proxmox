@@ -1,7 +1,9 @@
 [Unit]
 Description={{ username }} Kerberos Ticket Service
-Wants=network-online.target
-After=network-online.target
+After=network-online.target remote-fs.target
+{% if wanted_by is defined %}
+Before={{ wanted_by }}
+{% endif %}
 
 [Service]
 Type=simple

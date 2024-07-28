@@ -1,6 +1,7 @@
 [Unit]
 Description=ESPHome Dashboard
 After=esphome-kerberos-ticket-refresher.service
+Requires=esphome-kerberos-ticket-refresher.service
 
 [Service]
 User=esphome

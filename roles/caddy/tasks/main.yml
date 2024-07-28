@@ -48,6 +48,7 @@
 - import_tasks: idm_systemd_user_setup.yml
   vars:
     username: caddy
+    wanted_by_unit: caddy.service
   tags:
     - caddy
 

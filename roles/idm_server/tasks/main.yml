@@ -30,7 +30,7 @@
 
 - name: get kerberos credentials
   ansible.builtin.shell:
-    cmd: '{{ krb5_init }}'
+    cmd: "echo '{{ idm_admin_password }}' | kinit admin"
   changed_when: false
   when: krb5_init is defined
   tags:
