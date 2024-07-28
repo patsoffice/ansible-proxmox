@@ -34,6 +34,7 @@
   vars:
     username: lidarr
     groupname: media
+    wanted_by_unit: lidarr.service
   tags:
     - lidarr
 
@@ -131,6 +132,12 @@
   become: true
   become_user: lidarr
   when: not lidarr_db.stat.exists
+  tags:
+    - lidarr
+
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: lidarr
   tags:
     - lidarr
 
