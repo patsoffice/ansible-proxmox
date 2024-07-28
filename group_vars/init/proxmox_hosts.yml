@@ -281,10 +281,10 @@ proxmox_hosts:
       - hostname: '{{ mqtt.hostname }}'
         vmid: '{{ mqtt.vmid }}'
         password: '{{ mqtt.password }}'
-        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
-        memory: 256
-        swap: 256
+        memory: 512
+        swap: 512
         storage: 'local-zfs'
         rootfs_size: 8
         features:

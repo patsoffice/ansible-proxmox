@@ -2,24 +2,50 @@
 - import_tasks: ubuntu_setup.yml
   vars:
     packages:
+      - freeipa-client
+      - kstart
       - mosquitto
       - mosquitto-clients
       - nfs-common
+      - nfs4-acl-tools
       - rdiff-backup
   tags:
     - mqtt
 
-- import_tasks: appdir_and_mountpoints.yml
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: mqtt
+    password: '{{ mqtt.password }}'
+    homedirectory: /config
+    loginshell: /usr/bin/bash
+  tags:
+    - mqtt
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - mqtt
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: mqtt
+    local_username: mosquitto
+  tags:
+    - mqtt
+
+- import_tasks: appdir_and_mountpoints_v4.yml
   vars:
     appdirs:
       - path: /config
         owner: mosquitto
         group: mosquitto
     mountpoints:
-      - src: '{{ backup_host }}:{{ backup_path }}'
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
-        owner: '{{ backup_owner }}'
-        group: '{{ backup_group }}'
+        mode: '0775'
+        owner: mqtt
+        group: mqtt
   tags:
     - mqtt
 
@@ -54,7 +80,7 @@
 
 - name: Restore the backup (if it exists and is necessary)
   ansible.builtin.command:
-    cmd: rdiff-backup -r now --force /backups/mqtt/ /config
+    cmd: rdiff-backup --api-version 201 --force restore /backups/mqtt/ /config
   ignore_errors: true
   when: not mosquitto_db.stat.exists
   tags:
@@ -69,9 +95,25 @@
   tags:
     - mqtt
 
-- import_tasks: backup.yml
+- import_tasks: backup_v4.yml
   vars:
-    backup_src: /config
-    backup_dest: /backups/mqtt
+    backup_src: '/config'
+    backup_dest: '/backups/mqtt'
+    backup_dir_name: mqtt
+    backup_owner: mqtt
+    backup_group: mqtt
+  tags:
+    - mqtt
+
+- name: change ownership of the backup log file
+  ansible.builtin.file:
+    path: /var/log/backup.log
+    owner: mosquitto
+    group: mosquitto
+    mode: "0770"
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+  changed_when: false
   tags:
     - mqtt
