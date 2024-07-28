@@ -1,7 +1,7 @@
 [Unit]
 Description=The snappy web interface for your 3D printer
-After=octoprint-kerberos-ticket-refresher.service
-Wants=network-online.target
+After=syslog.target octoprint-kerberos-ticket-refresher.service
+Requires=octoprint-kerberos-ticket-refresher.service
 
 [Service]
 PermissionsStartOnly=true
@@ -13,6 +13,10 @@ Environment="LC_ALL=C.UTF-8"
 Environment="LANG=C.UTF-8"
 ExecStartPre=/usr/bin/chgrp octoprint /dev/ttyACM0
 ExecStart=/opt/python/bin/octoprint --basedir /config
+
+SyslogIdentifier=octoprint
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target

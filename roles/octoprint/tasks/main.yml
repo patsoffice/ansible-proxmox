@@ -38,6 +38,7 @@
   vars:
     username: octoprint
     groupname: octoprint
+    wanted_by_unit: octoprint.service
   tags:
     - octoprint
 
@@ -64,6 +65,7 @@
     chdir: /opt
   become: true
   become_user: octoprint
+  changed_when: false
   tags:
     - octoprint
 
@@ -101,6 +103,12 @@
     path: /dev/ttyACM0
     state: file
     group: octoprint
+  tags:
+    - octoprint
+
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: octoprint
   tags:
     - octoprint
 
