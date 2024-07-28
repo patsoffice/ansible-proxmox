@@ -1,6 +1,7 @@
 [Unit]
 Description=Tdarr Node Daemon
-After={{ additional_vars.username }}-kerberos-ticket-refresher.service
+After=syslog.target {{ additional_vars.username }}-kerberos-ticket-refresher.service
+Requires={{ additional_vars.username }}-kerberos-ticket-refresher.service
 
 [Service]
 User={{ additional_vars.username }}
@@ -12,6 +13,10 @@ ExecStart=/opt/tdarr/Tdarr_Node/Tdarr_Node
 TimeoutStopSec=20
 KillMode=mixed
 Restart=on-failure
+
+SyslogIdentifier={{ additional_vars.username }}
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target

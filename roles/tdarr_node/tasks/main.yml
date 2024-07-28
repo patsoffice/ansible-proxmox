@@ -35,6 +35,7 @@
   vars:
     username: '{{ additional_vars.username }}'
     groupname: media
+    wanted_by_unit: tdarr-node.service
   tags:
     - tdarr_node
 
@@ -143,6 +144,12 @@
     mode: 0644
     owner: root
     group: root
+  tags:
+    - tdarr_node
+
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: "{{ additional_vars.username }}"
   tags:
     - tdarr_node
 
