@@ -1,6 +1,7 @@
 [Unit]
 Description=Overseer
-After=overseer-kerberos-ticket-refresher.service
+After=syslog.target overseer-kerberos-ticket-refresher.service
+Requires=overseer-kerberos-ticket-refresher.service
 
 [Service]
 User=overseer
@@ -13,6 +14,7 @@ KillSignal=SIGINT
 
 SyslogIdentifier=overseer
 StandardOutput=syslog
+StandardError=syslog
 
 WorkingDirectory=/opt/overseer
 

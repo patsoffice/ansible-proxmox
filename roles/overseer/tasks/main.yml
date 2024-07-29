@@ -182,6 +182,12 @@
   tags:
     - overseer
 
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: overseer
+  tags:
+    - overseer
+
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'overseer.service'
