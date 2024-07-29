@@ -102,6 +102,6 @@
     backup_dir_name: mqtt
     backup_owner: mqtt
     backup_group: mqtt
-    cron_user: mosquitto
+    cron_owner: mosquitto
   tags:
     - mqtt
