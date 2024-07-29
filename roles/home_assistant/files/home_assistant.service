@@ -8,6 +8,7 @@ User=home_assistant
 
 Type=simple
 WorkingDirectory=/config
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 ExecStart=/opt/home_assistant/venv/bin/hass -c "/config"
 Restart=always
 RestartForceExitStatus=100
