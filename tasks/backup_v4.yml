@@ -76,7 +76,7 @@
     name: backup
     minute: '0'
     hour: '0'
-    user: '{{ cron_user | default(backup_owner) }}'
+    user: '{{ cron_owner | default(backup_owner) }}'
     job: 'RAND=$(shuf -i 0-20 -n 1)m && sleep ${RAND} && /opt/bin/backup.sh'
     cron_file: backup
 
