@@ -1,0 +1,17 @@
+frontend: true
+homeassistant: true
+permit_join: true
+mqtt:
+  base_topic: zigbee2mqtt
+  server: 'mqtt://mqtt.int.chezlawrence.com'
+  user: '{{ mqtt_user }}'
+  password: '{{ mqtt_password }}'
+serial:
+  port: /dev/zigbee
+  adapter: ember
+  baudrate: 230400
+advanced:
+  log_output:
+    - console
+device_options:
+  legacy: false

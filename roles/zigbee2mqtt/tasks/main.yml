@@ -1,0 +1,189 @@
+---
+- name: Download the repo key
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+  tags:
+    - zigbee2mqtt
+
+- name: Install the apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/nodesource.asc] https://deb.nodesource.com/node_20.x nodistro main"
+    state: present
+    filename: nodesource
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - binutils
+      - freeipa-client
+      - git
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - nodejs
+      - rdiff-backup
+      - unzip
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: zigbee
+    password: '{{ zigbee2mqtt.password }}'
+    homedirectory: /config
+    loginshell: /usr/bin/bash
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: zigbee
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: zigbee
+        group: zigbee
+      - path: /opt/zigbee2mqtt
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0775'
+        owner: zigbee
+        group: zigbee
+  tags:
+    - zigbee2mqtt
+
+- name: Install yarn package.
+  community.general.npm:
+    name: yarn
+    global: true
+  tags:
+    - zigbee2mqtt
+
+- name: Check that /opt/zwave-js-ui/version.txt exists
+  ansible.builtin.stat:
+    path: /opt/zigbee2mqtt/package.json
+  register: package_json
+  tags:
+    - zigbee2mqtt
+
+- name: Get the installed version
+  ansible.builtin.shell: grep '"version":' /opt/zigbee2mqtt/package.json | awk -F\" '{print $4}'
+  register: package_json_cmd
+  when: package_json.stat.exists
+  changed_when: false
+  tags:
+    - zigbee2mqtt
+
+- name: Set the zigbee2mqtt file version
+  ansible.builtin.set_fact:
+    installed_version: '{{ package_json_cmd.stdout_lines[0] | default("missing") }}'
+  tags:
+    - zigbee2mqtt
+
+- name: checkout zigbee2mqtt
+  ansible.builtin.git:
+    repo: https://github.com/Koenkk/zigbee2mqtt.git
+    dest: /opt/zigbee2mqtt
+    version: '{{ zigbee2mqtt_version }}'
+    recursive: true
+  when: zigbee2mqtt_version != installed_version
+  tags:
+    - zigbee2mqtt
+
+- name: Install zigbee2mqtt dependencies
+  ansible.builtin.command:
+    cmd: yarn install
+  args:
+    chdir: /opt/zigbee2mqtt
+  when: zigbee2mqtt_version != installed_version
+  tags:
+    - zigbee2mqtt
+
+- name: Build zigbee2mqtt
+  ansible.builtin.command:
+    cmd: yarn build
+  args:
+    chdir: /opt/zigbee2mqtt
+  when: zigbee2mqtt_version != installed_version
+  tags:
+    - zigbee2mqtt
+
+- name: Change dev node group
+  ansible.builtin.file:
+    path: /dev/zigbee
+    state: file
+    group: zigbee
+  tags:
+    - zigbee2mqtt
+
+- name: Put the configuration file in place
+  ansible.builtin.template:
+    src: configuration.yaml
+    dest: /config
+    mode: 0600
+    owner: zigbee
+    group: zigbee
+  tags:
+    - zigbee2mqtt
+
+- name: Check that /config/database.db exists
+  ansible.builtin.stat:
+    path: /opt/overseer/config/database.db
+  register: database_db
+  tags:
+    - overseer
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup --api-version 201 --force restore /backups/zigbee2mqtt/ /config
+  ignore_errors: true
+  when: not database_db.stat.exists
+  tags:
+    - overseer
+
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: zigbee
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'zigbee2mqtt.service'
+    state: '{{ (web_version != installed_version) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - zigbee2mqtt
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/zigbee2mqtt'
+    backup_dir_name: zigbee2mqtt
+    backup_owner: zigbee
+    backup_group: zigbee
+  tags:
+    - zigbee2mqtt

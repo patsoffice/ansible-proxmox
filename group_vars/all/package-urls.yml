@@ -47,5 +47,7 @@ transmission_version: 4.0.6
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.20.0.tar.gz
 # https://github.com/valkey-io/valkey/releases
 valkey_version: 7.2.5
+# https://github.com/Koenkk/zigbee2mqtt/releases
+zigbee2mqtt_version: 1.39.0
 # https://github.com/zwave-js/zwave-js-ui/releases
 zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.16.2/zwave-js-ui-v9.16.2-linux.zip

@@ -236,8 +236,31 @@ proxmox_hosts:
     api_host: '{{ pve003.api_host }}'
     api_user: '{{ pve003.api_user }}'
     api_password: '{{ pve003.api_password }}'
+    udev_rules:
+      prusa: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="zigbee", MODE="0660", GROUP="dialout"'
     zfs_pools:
       - rpool
+    containers:
+      - hostname: '{{ zigbee2mqtt.hostname }}'
+        vmid: '{{ zigbee2mqtt.vmid }}'
+        password: '{{ zigbee2mqtt.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+          - 'lxc.mount.entry: /dev/zigbee dev/zigbee none bind,optional,create=file'
+        config_task: zigbee2mqtt
+        reverse_proxy_service: zigbee2mqtt
+        reverse_proxy_hostname: '{{ zigbee2mqtt.reverse_proxy_hostname }}'
+        service_port: 8080
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'

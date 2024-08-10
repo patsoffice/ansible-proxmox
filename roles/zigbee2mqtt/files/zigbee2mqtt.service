@@ -1,0 +1,25 @@
+[Unit]
+Description=Zigbee2MQTT
+After=syslog.target zigbee-kerberos-ticket-refresher.service
+Requires=zigbee-kerberos-ticket-refresher.service
+
+[Service]
+PermissionsStartOnly=true
+
+User=zigbee
+Group=zigbee
+UMask=0022
+
+WorkingDirectory=/opt/zigbee2mqtt
+Environment=ZIGBEE2MQTT_DATA=/config
+ExecStartPre=/usr/bin/chgrp zigbee /dev/zigbee
+ExecStart=/usr/bin/yarn start
+Restart=on-failure
+KillSignal=SIGINT
+
+SyslogIdentifier=zigbee
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
