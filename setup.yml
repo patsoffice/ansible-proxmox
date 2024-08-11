@@ -197,6 +197,12 @@
   roles:
     - zwave_js_ui
 
+- hosts: zigbee2mqtt_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - zigbee2mqtt
+
 - hosts: home_assistant_hosts
   gather_facts: yes
   remote_user: root

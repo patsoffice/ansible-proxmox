@@ -28,7 +28,7 @@
     dest: /tmp/go.tar.gz
   when: go_version != go_file_version.stdout
 
-- name: Remove the go installation
+- name: Remove the previous go installation
   ansible.builtin.file:
     path: /opt/go
     state: absent
@@ -43,6 +43,10 @@
 
 - name: Remove the go tarball
   ansible.builtin.file:
-    path: /opt/go.tar.gz
+    path: /tmp/go.tar.gz
     state: absent
   when: go_version != go_file_version.stdout
+
+- name: Register if the go version changed
+  ansible.builtin.set_fact:
+    go_version_changed: "{{go_version != go_file_version.stdout}}"

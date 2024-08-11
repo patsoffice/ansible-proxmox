@@ -20,8 +20,10 @@ caddy_domain: domain.com
 caddy_domain_wildcard: "*.domain.com"
 caddy_dns_cloudflare_email: user@domain.com
 caddy_dns_cloudflare_token: aslfkalsdflkasdljfljsadljksdjfalskdf
-caddy_uid: 1999
-caddy_gid: 1999
+caddy_host_ips: ["10.10.5.30", "10.10.5.31"]
+caddy_vip_ip: "10.10.5.0"
+caddy_user: root
+caddy_config_path: /config/services.d
 ```
 
 ## all/containers.yml

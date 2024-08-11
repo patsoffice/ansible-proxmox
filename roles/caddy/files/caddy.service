@@ -16,8 +16,7 @@
 [Unit]
 Description=Caddy
 Documentation=https://caddyserver.com/docs/
-After=caddy-kerberos-ticket-refresher.service
-Requires=caddy-kerberos-ticket-refresher.service
+After=syslog.target
 
 [Service]
 Type=notify

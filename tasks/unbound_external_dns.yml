@@ -1,7 +1,7 @@
 ---
 - name: 'store unbound external DNS info for {{ reverse_proxy_hostname }}'
   ansible.builtin.set_fact:
-    unbound_ip_address: '{{ caddy_host }}'
+    unbound_ip_address: '{{ caddy_vip_ip }}'
     unbound_fqdn: '{{ reverse_proxy_hostname | default(omit) }}'
     unbound_domain: '{{ reverse_proxy_hostname.split(".", 1) [1] | default(omit) }}'
 

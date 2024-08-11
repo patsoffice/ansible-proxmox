@@ -18,13 +18,14 @@
   vars:
     packages:
       - apt-transport-https
+      - corosync
       - freeipa-client
       - gnupg
       - jq
       - kstart
       - nfs-common
       - nfs4-acl-tools
-      - rdiff-backup
+      - pacemaker
       - software-properties-common
       - xcaddy
   tags:
@@ -36,19 +37,6 @@
     password: '{{ caddy.password }}'
     homedirectory: /config
     loginshell: /usr/bin/bash
-  tags:
-    - caddy
-
-- import_tasks: idm_service_setup.yml
-  vars:
-    service_principal_name: 'nfs/{{ container_hostname }}'
-  tags:
-    - caddy
-
-- import_tasks: idm_systemd_user_setup.yml
-  vars:
-    username: caddy
-    wanted_by_unit: caddy.service
   tags:
     - caddy
 
@@ -66,12 +54,6 @@
         owner: caddy
         group: caddy
         mode: '0700'
-    mountpoints:
-      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
-        dest: /backups
-        mode: '0775'
-        owner: caddy
-        group: caddy
   tags:
     - caddy
 
@@ -108,30 +90,31 @@
 - name: Build caddy
   ansible.builtin.shell:
     cmd: 'XCADDY_WHICH_GO=/opt/go/bin/go xcaddy build {{ caddy_version }} --with {{ caddy_dns_cloudflare }} --with {{ caddy_dns_route53 }} --with {{ caddy_dns_duckdns }} --output /opt/caddy'
-  when: caddy_version != caddy_file_version.stdout
+  when: (caddy_version != caddy_file_version.stdout) or go_version_changed
   tags:
     - caddy
 
-- name: Check that /config/Caddyfile exists
-  ansible.builtin.stat:
-    path: /config/Caddyfile
+- name: copy the Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile
+    dest: /config/Caddyfile
+    mode: 0600
+    owner: caddy
+    group: caddy
   register: caddyfile
   tags:
     - caddy
 
-- name: Restore the backup (if it exists and is necessary)
-  ansible.builtin.command:
-    cmd: rdiff-backup --api-version 201 --force restore /backups/caddy/ /config/
-  ignore_errors: true
-  become_user: caddy
-  when: not caddyfile.stat.exists
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: "caddy"
   tags:
     - caddy
 
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'caddy.service'
-    state: '{{ (caddy_version != caddy_file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ ((caddy_version != caddy_file_version.stdout) or caddyfile.changed or go_version_changed) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - caddy
 
@@ -148,12 +131,102 @@
   tags:
     - caddy
 
-- import_tasks: backup_v4.yml
-  vars:
-    backup_src: '/config'
-    backup_dest: '/backups/caddy'
-    backup_dir_name: caddy
-    backup_owner: caddy
-    backup_group: caddy
+- name: copy corosync.conf
+  ansible.builtin.template:
+    src: corosync.conf
+    dest: /etc/corosync/corosync.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: corosync_conf
+  tags:
+    - caddy
+
+- name: copy the corosync authkey
+  ansible.builtin.copy:
+    src: authkey
+    dest: /etc/corosync/authkey
+    mode: 0400
+    owner: root
+    group: root
+  register: corosync_authkey
+  tags:
+    - caddy
+
+- name: ensure corosync is started or restarted
+  ansible.builtin.systemd:
+    state: '{{ (corosync_conf.changed or corosync_authkey.changed) | ansible.builtin.ternary("restarted", "started") }}'
+    enabled: true
+    name: corosync.service
+  tags:
+    - caddy
+
+- name: ensure pacemaker is started or restarted
+  ansible.builtin.systemd:
+    state: '{{ (corosync_conf.changed or corosync_authkey.changed) | ansible.builtin.ternary("restarted", "started") }}'
+    enabled: true
+    name: pacemaker.service
+  tags:
+    - caddy
+
+- name: Pause for 20 secounds to let corosync sync
+  ansible.builtin.pause:
+    seconds: 20
+  when: corosync_conf.changed or corosync_authkey.changed
+  tags:
+    - caddy
+
+- name: Check if VIP resource exists
+  ansible.builtin.shell:
+    cmd: "pcs resource config caddy_vip"
+  register: caddy_vip
+  changed_when: false
+  ignore_errors: True
+  tags:
+    - caddy
+
+- name: Create a VIP resource if one doesn't exist
+  ansible.builtin.shell:
+    cmd: "pcs resource create caddy_vip ocf:heartbeat:IPaddr2 ip={{ caddy_vip }} cidr_netmask=32 op monitor interval=10s meta migration-threshold=10"
+  when: '"No resource found" in caddy_vip.stderr'
+  tags:
+    - caddy
+
+- name: Check if systemd resource exists
+  ansible.builtin.shell:
+    cmd: "pcs resource config caddy_service"
+  register: caddy_service
+  changed_when: false
+  ignore_errors: True
+  tags:
+    - caddy
+
+- name: Create a systemd service resource if one doesn't exist
+  ansible.builtin.shell:
+    cmd: "pcs resource create caddy_service systemd:caddy op start timeout=60s op stop timeout=60s op monitor interval=20s timeout=30s"
+  when: '"No resource found" in caddy_service.stderr'
+  tags:
+    - caddy
+
+- name: Check if constraints exists
+  ansible.builtin.shell:
+    cmd: "pcs constraint config --output-format=cmd"
+  register: caddy_constraints
+  changed_when: false
+  ignore_errors: True
+  tags:
+    - caddy
+
+- name: Create the order constraint if one doesn't exist
+  ansible.builtin.shell:
+    cmd: "pcs constraint order start caddy_vip then start caddy_service"
+  when: '"constraint order start caddy_vip then start caddy_service" not in caddy_constraints.stdout'
+  tags:
+    - caddy
+
+- name: Create the colocation constraint if one doesn't exist
+  ansible.builtin.shell:
+    cmd: "pcs constraint colocation add caddy_service with caddy_vip INFINITY"
+  when: '"constraint colocation add caddy_service with caddy_vip INFINITY" not in caddy_constraints.stdout'
   tags:
     - caddy

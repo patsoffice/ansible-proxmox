@@ -60,6 +60,20 @@ proxmox_hosts:
     zfs_pools:
       - rpool
     containers:
+      - hostname: '{{ caddy1.hostname }}'
+        vmid: '{{ caddy1.vmid }}'
+        password: '{{ caddy1.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 8
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: caddy
       - hostname: '{{ drawio.hostname }}'
         vmid: '{{ drawio.vmid }}'
         password: '{{ drawio.password }}'
@@ -270,12 +284,11 @@ proxmox_hosts:
     containers:
       - hostname: '{{ caddy0.hostname }}'
         vmid: '{{ caddy0.vmid }}'
-        container_ip: '{{ caddy0.container_ip }}'
         password: '{{ caddy0.password }}'
         ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
         cores: 1
-        memory: 512
-        swap: 512
+        memory: 1024
+        swap: 1024
         storage: 'local-zfs'
         rootfs_size: 8
         features:

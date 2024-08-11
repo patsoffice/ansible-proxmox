@@ -9,8 +9,11 @@
     src: 'caddy-router.toml'
     dest: '{{ caddy_config_path }}/{{ caddy_service }}.toml'
     mode: 0644
-    owner: '{{ caddy_uid }}'
-    group: '{{ caddy_gid }}'
-  delegate_to: '{{ caddy_host }}'
+    owner: caddy
+    group: caddy
+  loop: '{{ caddy_host_ips }}'
+  loop_control:
+    loop_var: caddy_host_ip
+  delegate_to: '{{ caddy_host_ip }}'
   remote_user: '{{ caddy_user }}'
   become: true
