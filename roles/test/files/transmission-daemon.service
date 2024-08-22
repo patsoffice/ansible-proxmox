@@ -1,0 +1,41 @@
+[Unit]
+Description=Transmission BitTorrent Daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=transmission
+Group=media
+Type=notify
+ExecStart=/opt/transmission/bin/transmission-daemon -f --log-level=error --config-dir /var/lib/transmission-daemon
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=1s
+
+# Hardening
+CapabilityBoundingSet=
+DevicePolicy=closed
+KeyringMode=private
+LockPersonality=true
+NoNewPrivileges=true
+MemoryDenyWriteExecute=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectClock=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectSystem=true
+ProtectHostname=true
+ProtectKernelTunables=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictRealtime=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

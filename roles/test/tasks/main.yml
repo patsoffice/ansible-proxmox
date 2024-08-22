@@ -1,0 +1,53 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - freeipa-client
+      - gssproxy
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - rdiff-backup
+  tags:
+    - test
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: testuser
+    groupname: media
+    password: '{{ test.password }}'
+  tags:
+    - test
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - test
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: testuser
+    groupname: media
+  tags:
+    - test
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /var/lib/test
+        owner: testuser
+        group: media
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0775'
+        owner: testuser
+        group: media
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
+        dest: /downloads
+        mode: '0775'
+        owner: testuser
+        group: media
+  tags:
+    - test

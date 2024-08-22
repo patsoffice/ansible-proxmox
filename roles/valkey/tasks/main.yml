@@ -138,7 +138,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'valkey-server.service'
-    state: '{{ (valkey_version != file_version.stdout) or valkey_conf.changed | ternary("restarted", "started") }}'
+    state: '{{ ((valkey_version != file_version.stdout) or valkey_conf.changed) | ternary("restarted", "started") }}'
   tags:
     - valkey
 

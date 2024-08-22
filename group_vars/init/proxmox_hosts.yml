@@ -275,6 +275,20 @@ proxmox_hosts:
         reverse_proxy_service: zigbee2mqtt
         reverse_proxy_hostname: '{{ zigbee2mqtt.reverse_proxy_hostname }}'
         service_port: 8080
+      - hostname: '{{ test.hostname }}'
+        vmid: '{{ test.vmid }}'
+        password: '{{ test.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 2
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: test
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
