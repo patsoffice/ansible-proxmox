@@ -22,13 +22,6 @@
     - dns
     - dnscrypt_proxy
 
-- name: Get dnscrypt-proxy URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ dnscrypt_proxy_package_url | regex_search('download/([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - dns
-    - dnscrypt_proxy
-
 - name: Check that /opt/dnscrypt-proxy/version.txt exists
   ansible.builtin.stat:
     path: /opt/dnscrypt-proxy/version.txt
@@ -55,9 +48,9 @@
 
 - name: Download latest dnscrypt-proxy
   ansible.builtin.get_url:
-    url: '{{ dnscrypt_proxy_package_url }}'
+    url: "https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/{{ dnscrypt_proxy_version }}/dnscrypt-proxy-linux_x86_64-{{ dnscrypt_proxy_version }}.tar.gz"
     dest: /opt/dnscrypt-proxy.tar.gz
-  when: web_version != installed_version
+  when: dnscrypt_proxy_version != installed_version
   tags:
     - dns
     - dnscrypt_proxy
@@ -69,7 +62,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != installed_version
+  when: dnscrypt_proxy_version != installed_version
   tags:
     - dns
     - dnscrypt_proxy
@@ -78,7 +71,7 @@
   ansible.builtin.file:
     path: /opt/dnscrypt-proxy.tar.gz
     state: absent
-  when: web_version != installed_version
+  when: dnscrypt_proxy_version != installed_version
   tags:
     - dns
     - dnscrypt_proxy
@@ -90,7 +83,9 @@
     mode: 0644
     owner: root
     group: root
-  when: web_version != installed_version
+  vars:
+    web_version: "{{ dnscrypt_proxy_version }}"
+  when: dnscrypt_proxy_version != installed_version
   tags:
     - dns
     - dnscrypt_proxy
@@ -109,7 +104,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'dnscrypt-proxy.service'
-    state: '{{ (web_version != installed_version) | ternary("restarted", "started") }}'
+    state: '{{ (dnscrypt_proxy_version != installed_version) | ternary("restarted", "started") }}'
   tags:
     - dns
     - dnscrypt_proxy

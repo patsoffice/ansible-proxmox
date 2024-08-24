@@ -6,7 +6,7 @@ caddy_dns_cloudflare: github.com/caddy-dns/cloudflare
 caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
-dnscrypt_proxy_package_url: https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/2.1.5/dnscrypt-proxy-linux_x86_64-2.1.5.tar.gz
+dnscrypt_proxy_version: 2.1.5
 # https://github.com/jgraph/drawio/releases
 drawio_war_url: https://github.com/jgraph/drawio/releases/download/v24.7.5/draw.war
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
