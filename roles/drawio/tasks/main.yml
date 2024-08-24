@@ -20,12 +20,6 @@
   tags:
     - drawio
 
-- name: Get tomcat URL version
-  ansible.builtin.set_fact:
-    tomcat_web_version: "{{ tomcat_core_dist_url | regex_search('/v([\\d.]+)/bin', '\\1') | first }}"
-  tags:
-    - drawio
-
 - name: Check that /opt/tomcat/version.txt exists
   ansible.builtin.stat:
     path: /opt/tomcat/version.txt
@@ -49,9 +43,9 @@
 
 - name: Download latest tomcat
   ansible.builtin.get_url:
-    url: '{{ tomcat_core_dist_url }}'
+    url: "https://dlcdn.apache.org/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
     dest: /opt/tomcat.tar.gz
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -62,7 +56,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -70,7 +64,7 @@
   ansible.builtin.file:
     path: /opt/tomcat.tar.gz
     state: absent
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -81,7 +75,7 @@
     recurse: true
     owner: root
     group: drawio
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -93,7 +87,7 @@
     owner: root
     group: drawio
     mode: u=rwX,g=rwX
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -109,7 +103,7 @@
     - temp
     - webapps
     - work
-  when: tomcat_web_version != tomcat_installed_version
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -121,14 +115,8 @@
     owner: root
     group: drawio
   vars:
-    version: '{{ tomcat_web_version }}'
-  when: tomcat_web_version != tomcat_installed_version
-  tags:
-    - drawio
-
-- name: Get drawio URL version
-  ansible.builtin.set_fact:
-    drawio_web_version: "{{ drawio_war_url | regex_search('download/v([\\d.]+)/', '\\1') | first }}"
+    web_version: '{{ tomcat_version }}'
+  when: tomcat_version != tomcat_installed_version
   tags:
     - drawio
 
@@ -155,9 +143,9 @@
 
 - name: Download latest drawio
   ansible.builtin.get_url:
-    url: '{{ drawio_war_url }}'
+    url: "https://github.com/jgraph/drawio/releases/download/{{ drawio_version }}/draw.war"
     dest: /opt/drawio.war
-  when: drawio_web_version != drawio_installed_version
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
@@ -168,7 +156,7 @@
     owner: drawio
     group: drawio
     mode: '0750'
-  when: drawio_web_version != drawio_installed_version
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
@@ -177,7 +165,7 @@
     src: /opt/drawio.war
     dest: /opt/tomcat/webapps/draw
     remote_src: true
-  when: drawio_web_version != drawio_installed_version
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
@@ -185,7 +173,7 @@
   ansible.builtin.file:
     path: /opt/drawio.war
     state: absent
-  when: drawio_web_version != drawio_installed_version
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
@@ -196,7 +184,7 @@
     recurse: true
     owner: drawio
     group: drawio
-  when: drawio_web_version != drawio_installed_version
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
@@ -233,15 +221,15 @@
     owner: drawio
     group: drawio
   vars:
-    version: '{{ drawio_web_version }}'
-  when: drawio_web_version != drawio_installed_version
+    web_version: '{{ drawio_version }}'
+  when: drawio_version != drawio_installed_version
   tags:
     - drawio
 
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'tomcat.service'
-    state: '{{ (drawio_web_version != drawio_installed_version or tomcat_web_version != tomcat_installed_version) | ternary("restarted", "started") }}'
+    state: '{{ (drawio_version != drawio_installed_version or tomcat_version != tomcat_installed_version) | ternary("restarted", "started") }}'
   tags:
     - drawio
 
