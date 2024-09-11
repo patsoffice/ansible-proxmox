@@ -83,12 +83,6 @@
   tags:
     - sonarr
 
-- name: Get Sonarr URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ sonarr_master_url | regex_search('download/v([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - sonarr
-
 - name: Check that /opt/sonarr/Sonarr.Core.dll exists
   ansible.builtin.stat:
     path: /opt/sonarr/Sonarr.Core.dll
@@ -115,9 +109,9 @@
 
 - name: Download latest sonarr
   ansible.builtin.get_url:
-    url: '{{ sonarr_master_url }}'
+    url: 'https://github.com/Sonarr/Sonarr/releases/download/v{{ sonarr_version }}/Sonarr.main.{{ sonarr_version }}.linux-x64.tar.gz'
     dest: /opt/sonarr.tar.gz
-  when: web_version != file_version.stdout
+  when: sonarr_version != file_version.stdout
   tags:
     - sonarr
 
@@ -128,7 +122,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != file_version.stdout
+  when: sonarr_version != file_version.stdout
   tags:
     - sonarr
 
@@ -136,7 +130,7 @@
   ansible.builtin.file:
     path: /opt/sonarr.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: sonarr_version != file_version.stdout
   tags:
     - sonarr
 
@@ -160,7 +154,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'sonarr.service'
-    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (sonarr_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - sonarr
 
