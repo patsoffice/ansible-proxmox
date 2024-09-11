@@ -19,7 +19,7 @@ lidarr_version: 2.5.3.4341
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_version: 2.0.81
 # https://github.com/sct/overseerr/releases
-overseer_src_url: https://github.com/sct/overseerr/archive/refs/tags/v1.33.2.tar.gz
+overseer_version: 1.33.2
 # https://github.com/pi-hole/pi-hole/releases
 pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.3.tar.gz
 # https://www.openssl.org/source/

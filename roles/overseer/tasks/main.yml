@@ -75,12 +75,6 @@
   tags:
     - overseer
 
-- name: Get overseer URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ overseer_src_url | regex_search('/v([\\d.]+).tar.gz', '\\1') | first }}"
-  tags:
-    - overseer
-
 - name: Check that /opt/overseer/version.txt exists
   ansible.builtin.stat:
     path: /opt/overseer/version.txt
@@ -104,9 +98,9 @@
 
 - name: Download latest overseer
   ansible.builtin.get_url:
-    url: '{{ overseer_src_url }}'
+    url: 'https://github.com/sct/overseerr/archive/refs/tags/v{{ overseer_version }}.tar.gz'
     dest: /opt/overseer.tar.gz
-  when: web_version != installed_version
+  when: overseer_version != installed_version
   tags:
     - overseer
 
@@ -117,7 +111,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != installed_version
+  when: overseer_version != installed_version
   tags:
     - overseer
 
@@ -125,7 +119,7 @@
   ansible.builtin.file:
     path: /opt/overseer.tar.gz
     state: absent
-  when: web_version != installed_version
+  when: overseer_version != installed_version
   tags:
     - overseer
 
@@ -134,7 +128,7 @@
     cmd: yarn install
   args:
     chdir: /opt/overseer
-  when: web_version != installed_version
+  when: overseer_version != installed_version
   tags:
     - overseer
 
@@ -143,7 +137,7 @@
     cmd: yarn build
   args:
     chdir: /opt/overseer
-  when: web_version != installed_version
+  when: overseer_version != installed_version
   tags:
     - overseer
 
@@ -154,7 +148,9 @@
     mode: 0644
     owner: root
     group: root
-  when: web_version != installed_version
+  when: overseer_version != installed_version
+  vars:
+    web_version: '{{ overseer_version }}'
   tags:
     - overseer
 
@@ -191,7 +187,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'overseer.service'
-    state: '{{ (web_version != installed_version) | ternary("restarted", "started") }}'
+    state: '{{ (overseer_version != installed_version) | ternary("restarted", "started") }}'
   tags:
     - overseer
 
