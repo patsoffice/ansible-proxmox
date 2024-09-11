@@ -61,12 +61,6 @@
   tags:
     - lidarr
 
-- name: Get Lidarr URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ lidarr_master_url | regex_search('/v([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - lidarr
-
 - name: Check that /opt/lidarr/Lidarr.Core.dll exists
   ansible.builtin.stat:
     path: /opt/lidarr/Lidarr.Core.dll
@@ -93,9 +87,9 @@
 
 - name: Download latest lidarr
   ansible.builtin.get_url:
-    url: '{{ lidarr_master_url }}'
+    url: 'https://github.com/Lidarr/Lidarr/releases/download/v{{ lidarr_version }}/Lidarr.master.{{ lidarr_version }}.linux-core-x64.tar.gz'
     dest: /opt/lidarr.tar.gz
-  when: web_version != file_version.stdout
+  when: lidarr_version != file_version.stdout
   tags:
     - lidarr
 
@@ -106,7 +100,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != file_version.stdout
+  when: lidarr_version != file_version.stdout
   tags:
     - lidarr
 
@@ -114,7 +108,7 @@
   ansible.builtin.file:
     path: /opt/lidarr.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: lidarr_version != file_version.stdout
   tags:
     - lidarr
 
@@ -144,7 +138,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'lidarr.service'
-    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (lidarr_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - lidarr
 
