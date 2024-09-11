@@ -15,7 +15,6 @@ home_assistant_pyenv_version: 3.12.2
 homeassistant_version: 2024.8.2
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_version: 2.5.3.4341
-lidarr_master_url: https://github.com/Lidarr/Lidarr/releases/download/v2.4.3.4248/Lidarr.master.2.4.3.4248.linux-core-x64.tar.gz
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_package_url: https://github.com/netbootxyz/netboot.xyz/archive/refs/tags/2.0.81.tar.gz
 # https://github.com/sct/overseerr/releases
