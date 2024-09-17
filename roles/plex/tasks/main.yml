@@ -86,6 +86,9 @@
       - path: /config
         owner: plexmediaserver
         group: media
+      - path: /transcode
+        owner: plexmediaserver
+        group: media
     mountpoints:
       - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
         dest: /backups
@@ -99,11 +102,6 @@
         mode: '0775'
       - src: '{{ music_host_v4 }}:{{ music_path_v4 }}'
         dest: /mnt/music
-        mode: '0775'
-      - src: '{{ plex_transcode_host_v4 }}:{{ plex_transcode_path_v4 }}'
-        dest: /transcode
-        owner: plexmediaserver
-        group: media
         mode: '0775'
       - src: '{{ tv_host_v4 }}:{{ tv_path_v4 }}'
         dest: /mnt/tv

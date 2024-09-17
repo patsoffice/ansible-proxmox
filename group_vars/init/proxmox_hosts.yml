@@ -369,6 +369,8 @@ proxmox_hosts:
         swap: 8192
         storage: 'local-zfs'
         rootfs_size: 50
+        mounts:
+          mp0: "local-zfs:200G,mp=/transcode"
         features:
           - 'nesting=1'
           - 'mount=nfs'
