@@ -57,12 +57,6 @@
   tags:
     - radarr
 
-- name: Get Radarr URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ radarr_master_url | regex_search('v([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - radarr
-
 - name: Check that /opt/radarr/Radarr.Core.dll exists
   ansible.builtin.stat:
     path: /opt/radarr/Radarr.Core.dll
@@ -89,9 +83,9 @@
 
 - name: Download latest radarr
   ansible.builtin.get_url:
-    url: '{{ radarr_master_url }}'
+    url: "https://github.com/Radarr/Radarr/releases/download/v{{ radarr_version }}/Radarr.master.{{ radarr_version }}.linux-core-x64.tar.gz"
     dest: /opt/radarr.tar.gz
-  when: web_version != file_version.stdout
+  when: radarr_version != file_version.stdout
   tags:
     - radarr
 
@@ -102,7 +96,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != file_version.stdout
+  when: radarr_version != file_version.stdout
   tags:
     - radarr
 
@@ -110,7 +104,7 @@
   ansible.builtin.file:
     path: /opt/radarr.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: radarr_version != file_version.stdout
   tags:
     - radarr
 
@@ -134,7 +128,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'radarr.service'
-    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (radarr_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - radarr
 

@@ -58,16 +58,10 @@
   tags:
     - tautulli
 
-- name: Get Tautulli URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ tautulli_package_url | regex_search('tags/(v[\\d.]+).tar.gz', '\\1') | first }}"
-  tags:
-    - tautulli
-
 - name: Check that /opt/tautulli/tautulli/version.py exists
   ansible.builtin.stat:
     path: /opt/tautulli/plexpy/version.py
-  register: tautulli_version
+  register: tautulli_version_file
   tags:
     - tautulli
 
@@ -75,7 +69,7 @@
   ansible.builtin.shell:
     cmd: "/usr/bin/grep ^PLEXPY_RELEASE_VERSION /opt/tautulli//plexpy/version.py | awk -F\\\" '{print $2}'"
   register: file_version
-  when: tautulli_version.stat.exists
+  when: tautulli_version_file.stat.exists
   changed_when: false
   tags:
     - tautulli
@@ -90,9 +84,9 @@
 
 - name: Download tautulli
   ansible.builtin.get_url:
-    url: '{{ tautulli_package_url }}'
+    url: "https://github.com/Tautulli/Tautulli/archive/refs/tags/{{ tautulli_version }}.tar.gz"
     dest: /opt/tautulli/tautulli.tar.gz
-  when: web_version != file_version.stdout
+  when: tautulli_version != file_version.stdout
   tags:
     - tautulli
 
@@ -104,7 +98,7 @@
     extra_opts:
       - '--strip-components=1'
   no_log: true
-  when: web_version != file_version.stdout
+  when: tautulli_version != file_version.stdout
   tags:
     - tautulli
 
@@ -115,7 +109,9 @@
     mode: 0644
     owner: root
     group: root
-  when: web_version != file_version.stdout
+  when: tautulli_version != file_version.stdout
+  vars:
+    web_version: "{{ tautulli_version }}"
   tags:
     - tautulli
 
@@ -165,7 +161,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'tautulli.service'
-    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (tautulli_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - tautulli
 

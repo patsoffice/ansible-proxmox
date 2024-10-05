@@ -9,15 +9,15 @@ caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
 dnscrypt_proxy_version: 2.1.5
 # https://github.com/jgraph/drawio/releases
-drawio_version: v24.7.5
+drawio_version: v24.7.8
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
 home_assistant_pyenv_version: 3.12.2
 # https://github.com/home-assistant/core/releases
-homeassistant_version: 2024.8.2
+homeassistant_version: 2024.9.3
 # https://github.com/Lidarr/Lidarr/releases
 lidarr_version: 2.5.3.4341
 # https://github.com/netbootxyz/netboot.xyz/releases
-netboot_xyz_version: 2.0.81
+netboot_xyz_version: 2.0.82
 # https://github.com/sct/overseerr/releases
 overseer_version: 1.33.2
 # https://github.com/pi-hole/pi-hole/releases
@@ -25,7 +25,7 @@ pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.3.tar
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.6.tar.gz
 # https://github.com/Radarr/Radarr/releases
-radarr_master_url: https://github.com/Radarr/Radarr/releases/download/v5.9.1.9070/Radarr.master.5.9.1.9070.linux-core-x64.tar.gz
+radarr_version: 5.11.0.9244
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.3.3/SABnzbd-4.3.3-src.tar.gz
 # https://github.com/Sonarr/Sonarr/releases
@@ -34,9 +34,9 @@ sonarr_version: 4.0.9.2244
 syncthing_version: v1.27.12
 syncthing_go_version: 1.23.1
 # https://github.com/syslog-ng/syslog-ng/releases
-syslog_ng_src_url: https://github.com/syslog-ng/syslog-ng/releases/download/syslog-ng-4.8.0/syslog-ng-4.8.0.tar.gz
+syslog_ng_version: 4.8.1
 # Versions come from https://github.com/Tautulli/Tautulli/releases
-tautulli_package_url: https://github.com/Tautulli/Tautulli/archive/refs/tags/v2.14.4.tar.gz
+tautulli_version: v2.14.5
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.24.05/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.24.05/linux_x64/Tdarr_Server.zip

@@ -57,12 +57,6 @@
   tags:
     - syslog_ng
 
-- name: Get syslog-ng URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ syslog_ng_src_url | regex_search('download/syslog-ng-([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - syslog_ng
-
 - name: Check that /opt/syslog-ng/sbin/syslog-ng exists
   ansible.builtin.stat:
     path: /opt/syslog-ng/sbin/syslog-ng
@@ -89,9 +83,9 @@
 
 - name: Download latest syslog-ng
   ansible.builtin.get_url:
-    url: '{{ syslog_ng_src_url }}'
+    url: "https://github.com/syslog-ng/syslog-ng/releases/download/syslog-ng-{{ syslog_ng_version }}/syslog-ng-{{ syslog_ng_version }}.tar.gz"
     dest: /opt/syslog-ng.tar.gz
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -99,7 +93,7 @@
   ansible.builtin.file:
     path: /opt/syslog-ng-src
     state: directory
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -110,7 +104,7 @@
     remote_src: true
     extra_opts:
       - '--strip-components=1'
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -118,7 +112,7 @@
   ansible.builtin.file:
     path: /opt/syslog-ng.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -129,7 +123,7 @@
       make &&
       make install
     chdir: /opt/syslog-ng-src
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -137,7 +131,7 @@
   ansible.builtin.file:
     path: /opt/syslog-ng-src
     state: absent
-  when: web_version != file_version.stdout
+  when: syslog_ng_version != file_version.stdout
   tags:
     - syslog_ng
 
@@ -155,6 +149,6 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'syslog-ng.service'
-    state: '{{ (web_version != file_version.stdout) or syslog_ng_conf.changed | ternary("restarted", "started") }}'
+    state: '{{ ((syslog_ng_version != file_version.stdout) or syslog_ng_conf.changed) | ternary("restarted", "started") }}'
   tags:
     - syslog_ng
