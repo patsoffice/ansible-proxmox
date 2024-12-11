@@ -1,0 +1,137 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - freeipa-client
+      - git
+      - imagemagick
+      - kstart
+      - libegl-dev
+      - libopengl-dev
+      - nfs-common
+      - nfs4-acl-tools
+      - python3
+      - python3-pip
+      - python3-venv
+      - rdiff-backup
+  tags:
+    - calibre_content_server
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: calibre
+    groupname: media
+    password: '{{ calibre_content_server.password }}'
+    homedirectory: /opt/calibre
+    loginshell: /usr/bin/bash
+  tags:
+    - calibre_content_server
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - calibre_content_server
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: calibre
+    wanted_by_unit: calibre-web.service
+  tags:
+    - calibre_content_server
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: calibre
+        group: calibre
+      - path: /opt/calibre
+        owner: calibre
+        group: calibre
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0775'
+      - src: '{{ books_host_v4 }}:{{ books_path_v4 }}'
+        dest: /books
+        mode: '0775'
+  tags:
+    - calibre_content_server
+
+- name: Check that /opt/calibre/calibre-server exists
+  ansible.builtin.stat:
+    path: /opt/calibre/calibre-server
+  register: server
+  tags:
+    - calibre_content_server
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/calibre/calibre-server --version | awk '{print $3}' | sed 's/)/.0/'"
+  register: file_version
+  when: server.stat.exists
+  changed_when: false
+  tags:
+    - calibre_content_server
+
+- name: Set a default calibre file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - calibre_content_server
+
+- name: Download calibre
+  ansible.builtin.get_url:
+    url: 'https://github.com/kovidgoyal/calibre/releases/download/v{{ calibre_version }}/calibre-{{ calibre_version }}-x86_64.txz'
+    dest: /opt/calibre.tar.gz
+  when: calibre_version != file_version.stdout
+  tags:
+    - calibre_content_server
+
+- name: Extract the calibre package
+  ansible.builtin.unarchive:
+    src: /opt/calibre.tar.gz
+    dest: /opt/calibre
+    remote_src: true
+  no_log: true
+  when: calibre_version != file_version.stdout
+  become: true
+  become_user: calibre
+  tags:
+    - calibre_content_server
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/calibre.tar.gz
+    state: absent
+  when: calibre_version != file_version.stdout
+  tags:
+    - calibre_content_server
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'calibre-content-server.service'
+    state: '{{ (web_version != file_version.stdout) | ternary("restarted", "started") }}'
+  tags:
+    - calibre_content_server
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - calibre_content_server
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - calibre_content_server
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/calibre_content_server'
+    backup_dir_name: calibre_content_server
+    backup_owner: calibre
+    backup_group: calibre
+  tags:
+    - calibre_content_server

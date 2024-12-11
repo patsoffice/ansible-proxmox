@@ -74,6 +74,40 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: caddy
+      - hostname: '{{ calibre_content_server.hostname }}'
+        vmid: '{{ calibre_content_server.vmid }}'
+        password: '{{ calibre_content_server.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 2048
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: 'calibre_content_server'
+        reverse_proxy_service: 'calibre_content_server'
+        reverse_proxy_hostname: '{{ calibre_content_server.reverse_proxy_hostname }}'
+        service_port: 8080
+      - hostname: '{{ calibre_web.hostname }}'
+        vmid: '{{ calibre_web.vmid }}'
+        password: '{{ calibre_web.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 2048
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: 'calibre_web'
+        reverse_proxy_service: 'calibre_web'
+        reverse_proxy_hostname: '{{ calibre_web.reverse_proxy_hostname }}'
+        service_port: 8083
       - hostname: '{{ drawio.hostname }}'
         vmid: '{{ drawio.vmid }}'
         password: '{{ drawio.password }}'
@@ -122,6 +156,23 @@ proxmox_hosts:
         reverse_proxy_service: 'radarr'
         reverse_proxy_hostname: '{{ radarr.reverse_proxy_hostname }}'
         service_port: 7878
+      - hostname: '{{ readarr.hostname }}'
+        vmid: '{{ readarr.vmid }}'
+        password: '{{ readarr.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 2048
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: 'readarr'
+        reverse_proxy_service: 'readarr'
+        reverse_proxy_hostname: '{{ readarr.reverse_proxy_hostname }}'
+        service_port: 8787
       - hostname: '{{ sonarr.hostname }}'
         vmid: '{{ sonarr.vmid }}'
         password: '{{ sonarr.password }}'

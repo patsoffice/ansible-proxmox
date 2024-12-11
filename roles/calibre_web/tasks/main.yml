@@ -1,0 +1,163 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - freeipa-client
+      - git
+      - imagemagick
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - python3
+      - python3-cryptography
+      - python3-dev
+      - python3-netifaces
+      - python3-pip
+      - python3-venv
+      - rdiff-backup
+  tags:
+    - calibre_web
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: calibre_web
+    groupname: media
+    password: '{{ calibre_web.password }}'
+    homedirectory: /opt/calibre_web
+    loginshell: /usr/bin/bash
+  tags:
+    - calibre_web
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - calibre_web
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: calibre_web
+    wanted_by_unit: calibre-web.service
+  tags:
+    - calibre_web
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: calibre_web
+        group: calibre_web
+      - path: /opt/python
+        owner: calibre_web
+        group: calibre_web
+      - path: /opt/calibre_web
+        owner: calibre_web
+        group: calibre_web
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        mode: '0775'
+      - src: '{{ books_host_v4 }}:{{ books_path_v4 }}'
+        dest: /books
+        mode: '0775'
+  tags:
+    - calibre_web
+
+- name: Check that /opt/calibre_web/cps/constants.py exists
+  ansible.builtin.stat:
+    path: /opt/calibre_web/cps/constants.py
+  register: constants
+  tags:
+    - calibre_web
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "grep STABLE_VERSION /opt/calibre_web/cps/constants.py | awk -F\\' '{print $4}'"
+  register: file_version
+  when: constants.stat.exists
+  changed_when: false
+  tags:
+    - calibre_web
+
+- name: Set a default Calibre web file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - calibre_web
+
+- name: Download calibre_web
+  ansible.builtin.get_url:
+    url: 'https://github.com/janeczku/calibre-web/archive/refs/tags/{{ calibre_web_version }}.tar.gz'
+    dest: /opt/calibre_web.tar.gz
+  when: calibre_web_version != file_version.stdout
+  tags:
+    - calibre_web
+
+- name: Extract the calibre_web package
+  ansible.builtin.unarchive:
+    src: /opt/calibre_web.tar.gz
+    dest: /opt/calibre_web
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  no_log: true
+  when: calibre_web_version != file_version.stdout
+  become: true
+  become_user: calibre_web
+  tags:
+    - calibre_web
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/calibre_web.tar.gz
+    state: absent
+  when: calibre_web_version != file_version.stdout
+  tags:
+    - calibre_web
+
+- name: Ensure the virtual environment is created
+  ansible.builtin.shell:
+    cmd: python3 -m venv python
+    chdir: /opt
+  become: true
+  become_user: calibre_web
+  changed_when: false
+  tags:
+    - calibre_web
+
+- name: Install calibre-web dependencies into the venv
+  ansible.builtin.pip:
+    requirements: /opt/calibre_web/requirements.txt
+    virtualenv: /opt/python
+    virtualenv_site_packages: true
+  become: true
+  become_user: calibre_web
+  tags:
+    - calibre_web
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'calibre-web.service'
+    state: '{{ (web_version != file_version.stdout) | ternary("restarted", "started") }}'
+  tags:
+    - calibre_web
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - calibre_web
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - calibre_web
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/calibre_web'
+    backup_dir_name: calibre_web
+    backup_owner: calibre_web
+    backup_group: calibre_web
+  tags:
+    - calibre_web

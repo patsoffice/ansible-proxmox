@@ -1,0 +1,17 @@
+[Unit]
+Description=Readarr Daemon
+After=syslog.target readarr-kerberos-ticket-refresher.service
+
+[Service]
+User=readarr
+Group=media
+UMask=0002
+
+Type=simple
+ExecStart=/opt/readarr/Readarr -nobrowser -data=/config/
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

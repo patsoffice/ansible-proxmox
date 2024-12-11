@@ -6,6 +6,10 @@ caddy_go_version: 1.23.1
 caddy_dns_cloudflare: github.com/caddy-dns/cloudflare
 caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
+# https://github.com/kovidgoyal/calibre/releases
+calibre_version: 7.21.0
+# https://github.com/janeczku/calibre-web/releases
+calibre_web_version: 0.6.23
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
 dnscrypt_proxy_version: 2.1.5
 # https://github.com/jgraph/drawio/releases
@@ -26,6 +30,8 @@ pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.3.tar
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.6.tar.gz
 # https://github.com/Radarr/Radarr/releases
 radarr_version: 5.11.0.9244
+# https://github.com/Readarr/Readarr/releases
+readarr_version: 0.4.3.2665
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.3.3/SABnzbd-4.3.3-src.tar.gz
 # https://github.com/Sonarr/Sonarr/releases

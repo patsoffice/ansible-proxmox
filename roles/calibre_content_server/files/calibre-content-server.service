@@ -1,0 +1,17 @@
+[Unit]
+Description=Calibre Web
+After=calibre-kerberos-ticket-refresher.service
+Requires=calibre-kerberos-ticket-refresher.service
+
+[Service]
+User=calibre
+Group=media
+
+WorkingDirectory=/opt/calibre
+ExecStart=/opt/calibre/calibre-server --userdb /config/users.sqlite --enable-auth /books
+Environment="LC_ALL=C.UTF-8"
+Environment="LANG=C.UTF-8"
+Type=exec
+
+[Install]
+WantedBy=multi-user.target

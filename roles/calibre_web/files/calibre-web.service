@@ -1,0 +1,17 @@
+[Unit]
+Description=Calibre Web
+After=calibre_web-kerberos-ticket-refresher.service
+Requires=calibre_web-kerberos-ticket-refresher.service
+
+[Service]
+User=calibre_web
+Group=media
+
+WorkingDirectory=/opt/calibre_web
+ExecStart=/opt/python/bin/python3 cps.py -p /config
+Environment="LC_ALL=C.UTF-8"
+Environment="LANG=C.UTF-8"
+Type=exec
+
+[Install]
+WantedBy=multi-user.target

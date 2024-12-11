@@ -1,0 +1,151 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    packages:
+      - binutils
+      - freeipa-client
+      - kstart
+      - nfs-common
+      - nfs4-acl-tools
+      - rdiff-backup
+  tags:
+    - readarr
+
+- import_tasks: idm_client_setup.yml
+  vars:
+    username: readarr
+    groupname: media
+    password: '{{ readarr.password }}'
+    homedirectory: /opt/readarr
+    loginshell: /usr/bin/bash
+  tags:
+    - readarr
+
+- import_tasks: idm_service_setup.yml
+  vars:
+    service_principal_name: 'nfs/{{ container_hostname }}'
+  tags:
+    - readarr
+
+- import_tasks: idm_systemd_user_setup.yml
+  vars:
+    username: readarr
+    groupname: media
+  tags:
+    - readarr
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: readarr
+        group: readarr
+      - path: /opt/readarr
+        owner: root
+        group: root
+    mountpoints:
+      - src: '{{ backup_host_v4 }}:{{ backup_path_v4 }}'
+        dest: /backups
+        owner: readarr
+        group: readarr
+      - src: '{{ books_host_v4 }}:{{ books_path_v4 }}'
+        dest: /books
+        mode: '0775'
+      - src: '{{ download_host_v4 }}:{{ download_path_v4 }}'
+        dest: /downloads
+        mode: '0775'
+  tags:
+    - readarr
+
+- name: Check that /opt/readarr/Readarr.Core.dll exists
+  ansible.builtin.stat:
+    path: /opt/readarr/Readarr.Core.dll
+  register: readarr_core_dll
+  tags:
+    - readarr
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "strings /opt/readarr/Readarr.Core.dll | grep Version= | grep Readarr.Common | head -1 | awk -F'Version=' '{ print $2 }' | awk -F, '{print $1}'"
+  register: file_version
+  when: readarr_core_dll.stat.exists
+  changed_when: false
+  tags:
+    - readarr
+
+- name: Set a default Readarr file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - readarr
+
+- name: Download latest readarr
+  ansible.builtin.get_url:
+    url: "https://github.com/Readarr/Readarr/releases/download/v{{ readarr_version }}/Readarr.develop.{{ readarr_version }}.linux-core-x64.tar.gz"
+    dest: /opt/readarr.tar.gz
+  when: readarr_version != file_version.stdout
+  tags:
+    - readarr
+
+- name: Extract the readarr tarball
+  ansible.builtin.unarchive:
+    src: /opt/readarr.tar.gz
+    dest: /opt/readarr
+    remote_src: true
+    extra_opts:
+      - '--strip-components=1'
+  when: readarr_version != file_version.stdout
+  tags:
+    - readarr
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/readarr.tar.gz
+    state: absent
+  when: readarr_version != file_version.stdout
+  tags:
+    - readarr
+
+- name: Check that /config/readarr.db exists
+  ansible.builtin.stat:
+    path: /config/readarr.db
+  register: readarr_db
+  tags:
+    - readarr
+
+- name: Restore the backup (if it exists and is necessary)
+  ansible.builtin.command:
+    cmd: rdiff-backup --api-version 201 --force restore /backups/readarr/ /config/
+  ignore_errors: true
+  become: true
+  become_user: sonarr
+  when: not readarr_db.stat.exists
+  tags:
+    - readarr
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'readarr.service'
+    state: '{{ (readarr_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - readarr
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - readarr
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - readarr
+
+- import_tasks: backup_v4.yml
+  vars:
+    backup_src: '/config'
+    backup_dest: '/backups/readarr'
+    backup_dir_name: readarr
+    backup_owner: readarr
+    backup_group: readarr
+  tags:
+    - readarr
