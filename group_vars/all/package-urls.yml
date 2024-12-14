@@ -56,6 +56,6 @@ unbound_version: 1.22.0
 # https://github.com/valkey-io/valkey/releases
 valkey_version: 8.0.1
 # https://github.com/Koenkk/zigbee2mqtt/releases
-zigbee2mqtt_version: 1.39.1
+zigbee2mqtt_version: 1.42.0
 # https://github.com/zwave-js/zwave-js-ui/releases
 zwave_js_ui_version: 9.28.0

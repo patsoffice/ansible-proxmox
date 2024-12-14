@@ -96,6 +96,22 @@
   tags:
     - zigbee2mqtt
 
+- name: Clean the git folder
+  ansible.builtin.command: git clean -fdx
+  args:
+    chdir: /opt/zigbee2mqtt
+  when: zigbee2mqtt_version != installed_version
+  tags:
+    - zigbee2mqtt
+
+- name: Reset any local changes
+  ansible.builtin.command: git reset --hard
+  args:
+    chdir: /opt/zigbee2mqtt
+  when: zigbee2mqtt_version != installed_version
+  tags:
+    - zigbee2mqtt
+
 - name: checkout zigbee2mqtt
   ansible.builtin.git:
     repo: https://github.com/Koenkk/zigbee2mqtt.git
