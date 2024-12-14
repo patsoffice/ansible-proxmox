@@ -107,6 +107,8 @@
     owner: root
     group: root
   when: zwave_js_ui_version != installed_version
+  vars:
+    web_version: '{{ zwave_js_ui_version }}'
   tags:
     - zwave_js_ui
 
