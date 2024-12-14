@@ -52,11 +52,10 @@ tomcat_version: 9.0.98
 # Transmission versions come from https://github.com/transmission/transmission/releases
 transmission_version: 4.0.6
 # https://github.com/NLnetLabs/unbound/tags
-unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.21.0.tar.gz
 unbound_version: 1.22.0
 # https://github.com/valkey-io/valkey/releases
 valkey_version: 8.0.1
 # https://github.com/Koenkk/zigbee2mqtt/releases
 zigbee2mqtt_version: 1.39.1
 # https://github.com/zwave-js/zwave-js-ui/releases
-zwave_js_ui_package_url: https://github.com/zwave-js/zwave-js-ui/releases/download/v9.17.0/zwave-js-ui-v9.17.0-linux.zip
+zwave_js_ui_version: 9.28.0

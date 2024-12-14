@@ -53,12 +53,6 @@
   tags:
     - zwave_js_ui
 
-- name: Get zwave-js-ui URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ zwave_js_ui_package_url | regex_search('/v([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - zwave_js_ui
-
 - name: Check that /opt/zwave-js-ui/version.txt exists
   ansible.builtin.stat:
     path: /opt/zwave-js-ui/version.txt
@@ -82,9 +76,9 @@
 
 - name: Download latest zwave-js-ui
   ansible.builtin.get_url:
-    url: '{{ zwave_js_ui_package_url }}'
+    url: 'https://github.com/zwave-js/zwave-js-ui/releases/download/v{{ zwave_js_ui_version }}/zwave-js-ui-v{{ zwave_js_ui_version }}-linux.zip'
     dest: /opt/zwave_js_ui.zip
-  when: web_version != installed_version
+  when: zwave_js_ui_version != installed_version
   tags:
     - zwave_js_ui
 
@@ -93,7 +87,7 @@
     src: /opt/zwave_js_ui.zip
     dest: /opt/zwave-js-ui
     remote_src: true
-  when: web_version != installed_version
+  when: zwave_js_ui_version != installed_version
   tags:
     - zwave_js_ui
 
@@ -101,7 +95,7 @@
   ansible.builtin.file:
     path: /opt/zwave_js_ui.zip
     state: absent
-  when: web_version != installed_version
+  when: zwave_js_ui_version != installed_version
   tags:
     - zwave_js_ui
 
@@ -112,7 +106,7 @@
     mode: 0644
     owner: root
     group: root
-  when: web_version != installed_version
+  when: zwave_js_ui_version != installed_version
   tags:
     - zwave_js_ui
 
@@ -144,7 +138,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'zwave-js-ui.service'
-    state: '{{ (web_version != installed_version) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (zwave_js_ui_version != installed_version) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - zwave_js_ui
 
