@@ -15,7 +15,7 @@ dnscrypt_proxy_version: 2.1.5
 # https://github.com/jgraph/drawio/releases
 drawio_version: v24.7.17
 # From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
-home_assistant_pyenv_version: 3.12.2
+home_assistant_pyenv_version: 3.12.3
 # https://github.com/home-assistant/core/releases
 homeassistant_version: 2024.12.2
 # https://github.com/Lidarr/Lidarr/releases
@@ -53,6 +53,7 @@ tomcat_version: 9.0.98
 transmission_version: 4.0.6
 # https://github.com/NLnetLabs/unbound/tags
 unbound_src_url: https://github.com/NLnetLabs/unbound/archive/refs/tags/release-1.21.0.tar.gz
+unbound_version: 1.22.0
 # https://github.com/valkey-io/valkey/releases
 valkey_version: 8.0.1
 # https://github.com/Koenkk/zigbee2mqtt/releases

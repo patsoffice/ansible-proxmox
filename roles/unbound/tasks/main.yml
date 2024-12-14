@@ -140,13 +140,6 @@
     - dns
     - unbound
 
-- name: Get Unbound URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ unbound_src_url | regex_search('/release-([\\d.]+).tar.gz$', '\\1') | first }}"
-  tags:
-    - dns
-    - unbound
-
 - name: Check that /opt/unbound/lib/pkgconfig/libunbound.pc exists
   ansible.builtin.stat:
     path: /opt/unbound/lib/pkgconfig/libunbound.pc
@@ -176,9 +169,9 @@
 
 - name: Download latest Unbound
   ansible.builtin.get_url:
-    url: '{{ unbound_src_url }}'
+    url: 'https://github.com/NLnetLabs/unbound/archive/refs/tags/release-{{ unbound_version }}.tar.gz'
     dest: /tmp/unbound.tar.gz
-  when: web_version != file_version.stdout
+  when: unbound_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -188,7 +181,7 @@
     src: /tmp/unbound.tar.gz
     dest: /tmp
     remote_src: true
-  when: web_version != file_version.stdout
+  when: unbound_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -197,7 +190,7 @@
   ansible.builtin.file:
     path: /tmp/unbound.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: unbound_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -205,17 +198,17 @@
 - name: Build Unbound
   ansible.builtin.shell:
     cmd: ./configure --prefix=/opt/unbound --with-pthreads --with-username=unbound --with-ssl=/opt/openssl --with-libevent --with-libnghttp2 --enable-dnstap --enable-tfo-server --enable-tfo-client --enable-event-api --enable-subnet && make install
-    chdir: '/tmp/unbound-release-{{ web_version }}'
-  when: web_version != file_version.stdout
+    chdir: '/tmp/unbound-release-{{ unbound_version }}'
+  when: unbound_version != file_version.stdout
   tags:
     - dns
     - unbound
 
 - name: Remove the Unbound build directory
   ansible.builtin.file:
-    path: '/tmp/unbound-release-{{ web_version }}'
+    path: '/tmp/unbound-release-{{ unbound_version }}'
     state: absent
-  when: web_version != file_version.stdout
+  when: unbound_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -246,7 +239,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'unbound.service'
-    state: '{{ (web_version != file_version.stdout) | ternary("restarted", "started") }}'
+    state: '{{ (unbound_version != file_version.stdout) | ternary("restarted", "started") }}'
   tags:
     - dns
     - unbound
