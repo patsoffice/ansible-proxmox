@@ -33,7 +33,7 @@ radarr_version: 5.15.1.9463
 # https://github.com/Readarr/Readarr/releases
 readarr_version: 0.4.5.2699
 # https://github.com/sabnzbd/sabnzbd/releases
-sabnzbd_package_url: https://github.com/sabnzbd/sabnzbd/releases/download/4.3.3/SABnzbd-4.3.3-src.tar.gz
+sabnzbd_version: 4.4.0
 # https://github.com/Sonarr/Sonarr/releases
 sonarr_version: 4.0.11.2680
 # https://github.com/syncthing/syncthing/releases

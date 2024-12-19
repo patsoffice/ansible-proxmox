@@ -67,16 +67,10 @@
   tags:
     - sabnzbd
 
-- name: Get Sabnzbd URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ sabnzbd_package_url | regex_search('download/([\\d.]+)/', '\\1') | first }}"
-  tags:
-    - sabnzbd
-
 - name: Check that /opt/sabnzbd/sabnzbd/version.py exists
   ansible.builtin.stat:
     path: /opt/sabnzbd/sabnzbd/version.py
-  register: sabnzbd_version
+  register: installed_version
   tags:
     - sabnzbd
 
@@ -84,7 +78,7 @@
   ansible.builtin.shell:
     cmd: "/usr/bin/grep ^__version__ /opt/sabnzbd/sabnzbd/version.py | awk -F\\\" '{print $2}'"
   register: file_version
-  when: sabnzbd_version.stat.exists
+  when: installed_version.stat.exists
   changed_when: false
   tags:
     - sabnzbd
@@ -99,9 +93,9 @@
 
 - name: Download sabnzbd
   ansible.builtin.get_url:
-    url: '{{ sabnzbd_package_url }}'
+    url: 'https://github.com/sabnzbd/sabnzbd/releases/download/{{ sabnzbd_version }}/SABnzbd-{{ sabnzbd_version }}-src.tar.gz'
     dest: /opt/sabnzbd/sabnzbd.tar.gz
-  when: web_version != file_version.stdout
+  when: sabnzbd_version != file_version.stdout
   tags:
     - sabnzbd
 
@@ -113,7 +107,7 @@
     extra_opts:
       - '--strip-components=1'
   no_log: true
-  when: web_version != file_version.stdout
+  when: sabnzbd_version != file_version.stdout
   tags:
     - sabnzbd
 
@@ -121,7 +115,7 @@
   ansible.builtin.file:
     path: /opt/sabnzbd/sabnzbd.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: sabnzbd_version != file_version.stdout
   tags:
     - sabnzbd
 
@@ -165,7 +159,7 @@
 - import_tasks: systemd_unit.yml
   vars:
     systemd_unit: 'sabnzbd.service'
-    state: '{{ (web_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+    state: '{{ (sabnzbd_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
   tags:
     - sabnzbd
 
