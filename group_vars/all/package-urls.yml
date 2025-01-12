@@ -7,15 +7,15 @@ caddy_dns_cloudflare: github.com/caddy-dns/cloudflare
 caddy_dns_route53: github.com/caddy-dns/route53
 caddy_dns_duckdns: github.com/caddy-dns/duckdns
 # https://github.com/kovidgoyal/calibre/releases
-calibre_version: 7.23.0
+calibre_version: 7.24.0
 # https://github.com/janeczku/calibre-web/releases
 calibre_web_version: 0.6.24
 # https://github.com/DNSCrypt/dnscrypt-proxy/releases
-dnscrypt_proxy_version: 2.1.5
+dnscrypt_proxy_version: 2.1.7
 # https://github.com/jgraph/drawio/releases
-drawio_version: v24.7.17
-# From: $ . /home/home_assistant/.bashrc-pyenv && pyenv install --list
-home_assistant_pyenv_version: 3.12.3
+drawio_version: v26.0.4
+# From: $ . /opt/home_assistant/.bashrc-pyenv && pyenv install --list
+home_assistant_pyenv_version: 3.13.1
 # https://github.com/home-assistant/core/releases
 homeassistant_version: 2024.12.5
 # https://github.com/Lidarr/Lidarr/releases
@@ -29,21 +29,21 @@ pihole_src_url: https://github.com/pi-hole/pi-hole/archive/refs/tags/v5.18.3.tar
 # https://www.openssl.org/source/
 openssl_src_url: https://www.openssl.org/source/openssl-3.1.6.tar.gz
 # https://github.com/Radarr/Radarr/releases
-radarr_version: 5.16.3.9541
+radarr_version: 5.17.2.9580
 # https://github.com/Readarr/Readarr/releases
-readarr_version: 0.4.6.2711
+readarr_version: 0.4.8.2726
 # https://github.com/sabnzbd/sabnzbd/releases
 sabnzbd_version: 4.4.1
 # https://github.com/Sonarr/Sonarr/releases
-sonarr_version: 4.0.11.2680
+sonarr_version: 4.0.12.2823
 # https://github.com/syncthing/syncthing/releases
-syncthing_version: v1.28.1
+syncthing_version: v1.29.2
 # https://go.dev/dl/
 syncthing_go_version: 1.23.4
 # https://github.com/syslog-ng/syslog-ng/releases
 syslog_ng_version: 4.8.1
 # Versions come from https://github.com/Tautulli/Tautulli/releases
-tautulli_version: v2.15.0
+tautulli_version: v2.15.1
 # Versions come from https://f000.backblazeb2.com/file/tdarrs/versions.json
 tdarr_node_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.27.02/linux_x64/Tdarr_Node.zip
 tdarr_server_package_url: https://f000.backblazeb2.com/file/tdarrs/versions/2.27.02/linux_x64/Tdarr_Server.zip
@@ -54,7 +54,7 @@ transmission_version: 4.0.6
 # https://github.com/NLnetLabs/unbound/tags
 unbound_version: 1.22.0
 # https://github.com/valkey-io/valkey/releases
-valkey_version: 8.0.1
+valkey_version: 8.0.2
 # https://github.com/Koenkk/zigbee2mqtt/releases
 zigbee2mqtt_version: 1.42.0
 # https://github.com/zwave-js/zwave-js-ui/releases
