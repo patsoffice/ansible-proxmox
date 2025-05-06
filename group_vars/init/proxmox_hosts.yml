@@ -57,6 +57,10 @@ proxmox_hosts:
     api_host: '{{ pve002.api_host }}'
     api_user: '{{ pve002.api_user }}'
     api_password: '{{ pve002.api_password }}'
+    udev_rules:
+      prusa: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="2c99", ATTRS{idProduct}=="0002", SYMLINK+="prusa", MODE="0660", GROUP="dialout"'
+      z-wave: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="0658", ATTRS{idProduct}=="0200", SYMLINK+="z-wave", MODE="0660", GROUP="dialout"'
+      zigbee: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="zigbee", MODE="0660", GROUP="dialout"'
     zfs_pools:
       - rpool
     containers:
@@ -108,6 +112,24 @@ proxmox_hosts:
         reverse_proxy_service: 'calibre_web'
         reverse_proxy_hostname: '{{ calibre_web.reverse_proxy_hostname }}'
         service_port: 8083
+      - hostname: '{{ dns1.hostname }}'
+        vmid: '{{ dns1.vmid }}'
+        container_ip: '{{ dns1.container_ip }}'
+        password: '{{ dns1.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: dns
+        reverse_proxy_service: 'dns1'
+        reverse_proxy_hostname: '{{ dns1.reverse_proxy_hostname }}'
+        service_port: 80
       - hostname: '{{ drawio.hostname }}'
         vmid: '{{ drawio.vmid }}'
         password: '{{ drawio.password }}'
@@ -125,6 +147,23 @@ proxmox_hosts:
         reverse_proxy_service: drawio
         reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
         service_port: 8080
+      - hostname: '{{ grafana.hostname }}'
+        vmid: '{{ grafana.vmid }}'
+        password: '{{ grafana.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: grafana
+        reverse_proxy_service: grafana
+        reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
+        service_port: 3000
       - hostname: '{{ home_assistant.hostname }}'
         vmid: '{{ home_assistant.vmid }}'
         password: '{{ home_assistant.password }}'
@@ -139,6 +178,61 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: home_assistant
+      - hostname: '{{ idm0.hostname }}'
+        vmid: '{{ idm0.vmid }}'
+        password: '{{ idm0.password }}'
+        container_ip: '{{ idm0.container_ip }}'
+        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        cores: 1
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: idm_server
+        reverse_proxy_service: idm0
+        reverse_proxy_hostname: '{{ idm0.reverse_proxy_hostname }}'
+        service_port: 443
+      - hostname: '{{ lidarr.hostname }}'
+        vmid: '{{ lidarr.vmid }}'
+        password: '{{ lidarr.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 40
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: 'lidarr'
+        reverse_proxy_service: 'lidarr'
+        reverse_proxy_hostname: '{{ lidarr.reverse_proxy_hostname }}'
+        service_port: 8686
+      - hostname: '{{ octoprint.hostname }}'
+        vmid: '{{ octoprint.vmid }}'
+        password: '{{ octoprint.password }}'
+        unprivileged: false
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 512
+        swap: 512
+        storage: 'local-zfs'
+        rootfs_size: 8
+        features:
+          - 'nesting=1'
+        proxmox_default_behavior: compatibility
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+          - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
+        config_task: octoprint
+        reverse_proxy_service: octoprint
+        reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
+        service_port: 5000
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
         password: '{{ radarr.password }}'
@@ -279,12 +373,11 @@ proxmox_hosts:
         reverse_proxy_service: transmission
         reverse_proxy_hostname: '{{ transmission.reverse_proxy_hostname }}'
         service_port: 9091
-      - hostname: '{{ idm0.hostname }}'
-        vmid: '{{ idm0.vmid }}'
-        password: '{{ idm0.password }}'
-        container_ip: '{{ idm0.container_ip }}'
-        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
-        cores: 1
+      - hostname: '{{ test.hostname }}'
+        vmid: '{{ test.vmid }}'
+        password: '{{ test.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 2
         memory: 4096
         swap: 4096
         storage: 'local-zfs'
@@ -293,19 +386,7 @@ proxmox_hosts:
           - 'nesting=1'
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
-        config_task: idm_server
-        reverse_proxy_service: idm0
-        reverse_proxy_hostname: '{{ idm0.reverse_proxy_hostname }}'
-        service_port: 443
-  pve003:
-    api_host: '{{ pve003.api_host }}'
-    api_user: '{{ pve003.api_user }}'
-    api_password: '{{ pve003.api_password }}'
-    udev_rules:
-      prusa: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", SYMLINK+="zigbee", MODE="0660", GROUP="dialout"'
-    zfs_pools:
-      - rpool
-    containers:
+        config_task: test
       - hostname: '{{ zigbee2mqtt.hostname }}'
         vmid: '{{ zigbee2mqtt.vmid }}'
         password: '{{ zigbee2mqtt.password }}'
@@ -326,20 +407,26 @@ proxmox_hosts:
         reverse_proxy_service: zigbee2mqtt
         reverse_proxy_hostname: '{{ zigbee2mqtt.reverse_proxy_hostname }}'
         service_port: 8080
-      - hostname: '{{ test.hostname }}'
-        vmid: '{{ test.vmid }}'
-        password: '{{ test.password }}'
+      - hostname: '{{ zwave_js_ui.hostname }}'
+        vmid: '{{ zwave_js_ui.vmid }}'
+        password: '{{ zwave_js_ui.password }}'
         ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 2
-        memory: 4096
-        swap: 4096
+        cores: 1
+        memory: 1024
+        swap: 1024
         storage: 'local-zfs'
         rootfs_size: 16
         features:
           - 'nesting=1'
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
-        config_task: test
+        config_changes:
+          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+          - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
+        config_task: zwave_js_ui
+        reverse_proxy_service: zwave_js_ui
+        reverse_proxy_hostname: '{{ zwave_js_ui.reverse_proxy_hostname }}'
+        service_port: 8091
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
@@ -379,6 +466,38 @@ proxmox_hosts:
         reverse_proxy_service: 'dns0'
         reverse_proxy_hostname: '{{ dns0.reverse_proxy_hostname }}'
         service_port: 80
+      - hostname: '{{ esphome.hostname }}'
+        vmid: '{{ esphome.vmid }}'
+        password: '{{ esphome.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: esphome
+        reverse_proxy_service: esphome
+        reverse_proxy_hostname: '{{ esphome.reverse_proxy_hostname }}'
+        service_port: 6052
+      - hostname: '{{ idm1.hostname }}'
+        vmid: '{{ idm1.vmid }}'
+        password: '{{ idm1.password }}'
+        container_ip: '{{ idm1.container_ip }}'
+        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        cores: 1
+        memory: 4096
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: idm_replica
       - hostname: '{{ mqtt.hostname }}'
         vmid: '{{ mqtt.vmid }}'
         password: '{{ mqtt.password }}'
@@ -410,6 +529,40 @@ proxmox_hosts:
         reverse_proxy_service: netboot_xyz
         reverse_proxy_hostname: '{{ netboot_xyz.reverse_proxy_hostname }}'
         service_port: 80
+      - hostname: '{{ node_red.hostname }}'
+        vmid: '{{ node_red.vmid }}'
+        password: '{{ node_red.password }}'
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 1024
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: node_red
+        reverse_proxy_service: node_red
+        reverse_proxy_hostname: '{{ node_red.reverse_proxy_hostname }}'
+        service_port: 1880
+      - hostname: '{{ overseer.hostname }}'
+        vmid: '{{ overseer.vmid }}'
+        password: '{{ overseer.password }}'
+        unprivileged: false
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 2
+        memory: 2048
+        swap: 2048
+        storage: 'local-zfs'
+        rootfs_size: 8
+        features:
+          - 'nesting=1'
+        proxmox_default_behavior: compatibility
+        config_task: overseer
+        reverse_proxy_service: overseer
+        reverse_proxy_hostname: '{{ overseer.reverse_proxy_hostname }}'
+        service_port: 5055
       - hostname: '{{ plex.hostname }}'
         vmid: '{{ plex.vmid }}'
         password: '{{ plex.password }}'
@@ -434,6 +587,24 @@ proxmox_hosts:
         reverse_proxy_service: plex
         reverse_proxy_hostname: '{{ plex.reverse_proxy_hostname }}'
         service_port: 32400
+      - hostname: '{{ sabnzbd.hostname }}'
+        vmid: '{{ sabnzbd.vmid }}'
+        password: '{{ sabnzbd.password }}'
+        onboot: true
+        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+        cores: 1
+        memory: 2048
+        swap: 2048
+        storage: 'local-zfs'
+        rootfs_size: 16
+        features:
+          - 'nesting=1'
+          - 'mount=nfs'
+        proxmox_default_behavior: compatibility
+        config_task: sabnzbd
+        reverse_proxy_service: sabnzbd
+        reverse_proxy_hostname: '{{ sabnzbd.reverse_proxy_hostname }}'
+        service_port: 8080
       - hostname: '{{ syslog_ng.hostname }}'
         vmid: '{{ syslog_ng.vmid }}'
         container_ip: '{{ syslog_ng.container_ip }}'
@@ -504,172 +675,6 @@ proxmox_hosts:
         reverse_proxy_service: tdarr
         reverse_proxy_hostname: '{{ tdarr_server.reverse_proxy_hostname }}'
         service_port: 8265
-  pve006:
-    api_host: '{{ pve006.api_host }}'
-    api_user: '{{ pve006.api_user }}'
-    api_password: '{{ pve006.api_password }}'
-    udev_rules:
-      prusa: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="2c99", ATTRS{idProduct}=="0002", SYMLINK+="prusa", MODE="0660", GROUP="dialout"'
-      z-wave: 'SUBSYSTEM=="tty", ATTRS{idVendor}=="0658", ATTRS{idProduct}=="0200", SYMLINK+="z-wave", MODE="0660", GROUP="dialout"'
-    zfs_pools:
-      - rpool
-    containers:
-      - hostname: '{{ dns1.hostname }}'
-        vmid: '{{ dns1.vmid }}'
-        container_ip: '{{ dns1.container_ip }}'
-        password: '{{ dns1.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 512
-        swap: 512
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: dns
-        reverse_proxy_service: 'dns1'
-        reverse_proxy_hostname: '{{ dns1.reverse_proxy_hostname }}'
-        service_port: 80
-      - hostname: '{{ octoprint.hostname }}'
-        vmid: '{{ octoprint.vmid }}'
-        password: '{{ octoprint.password }}'
-        unprivileged: false
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 512
-        swap: 512
-        storage: 'local-zfs'
-        rootfs_size: 8
-        features:
-          - 'nesting=1'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
-        config_task: octoprint
-        reverse_proxy_service: octoprint
-        reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
-        service_port: 5000
-      - hostname: '{{ overseer.hostname }}'
-        vmid: '{{ overseer.vmid }}'
-        password: '{{ overseer.password }}'
-        unprivileged: false
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 2
-        memory: 2048
-        swap: 2048
-        storage: 'local-zfs'
-        rootfs_size: 8
-        features:
-          - 'nesting=1'
-        proxmox_default_behavior: compatibility
-        config_task: overseer
-        reverse_proxy_service: overseer
-        reverse_proxy_hostname: '{{ overseer.reverse_proxy_hostname }}'
-        service_port: 5055
-      - hostname: '{{ sabnzbd.hostname }}'
-        vmid: '{{ sabnzbd.vmid }}'
-        password: '{{ sabnzbd.password }}'
-        onboot: true
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 2048
-        swap: 2048
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: sabnzbd
-        reverse_proxy_service: sabnzbd
-        reverse_proxy_hostname: '{{ sabnzbd.reverse_proxy_hostname }}'
-        service_port: 8080
-      - hostname: '{{ lidarr.hostname }}'
-        vmid: '{{ lidarr.vmid }}'
-        password: '{{ lidarr.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 40
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: 'lidarr'
-        reverse_proxy_service: 'lidarr'
-        reverse_proxy_hostname: '{{ lidarr.reverse_proxy_hostname }}'
-        service_port: 8686
-      - hostname: '{{ esphome.hostname }}'
-        vmid: '{{ esphome.vmid }}'
-        password: '{{ esphome.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: esphome
-        reverse_proxy_service: esphome
-        reverse_proxy_hostname: '{{ esphome.reverse_proxy_hostname }}'
-        service_port: 6052
-      - hostname: '{{ grafana.hostname }}'
-        vmid: '{{ grafana.vmid }}'
-        password: '{{ grafana.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: grafana
-        reverse_proxy_service: grafana
-        reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
-        service_port: 3000
-      - hostname: '{{ idm1.hostname }}'
-        vmid: '{{ idm1.vmid }}'
-        password: '{{ idm1.password }}'
-        container_ip: '{{ idm1.container_ip }}'
-        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
-        cores: 1
-        memory: 4096
-        swap: 4096
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: idm_replica
-      - hostname: '{{ node_red.hostname }}'
-        vmid: '{{ node_red.vmid }}'
-        password: '{{ node_red.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_task: node_red
-        reverse_proxy_service: node_red
-        reverse_proxy_hostname: '{{ node_red.reverse_proxy_hostname }}'
-        service_port: 1880
       - hostname: '{{ valkey.hostname }}'
         vmid: '{{ valkey.vmid }}'
         password: '{{ valkey.password }}'
@@ -684,40 +689,3 @@ proxmox_hosts:
           - 'mount=nfs'
         proxmox_default_behavior: compatibility
         config_task: valkey
-      - hostname: '{{ tailscale006.hostname }}'
-        vmid: '{{ tailscale006.vmid }}'
-        password: '{{ tailscale006.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 512
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
-          - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
-        config_task: tailscale
-      - hostname: '{{ zwave_js_ui.hostname }}'
-        vmid: '{{ zwave_js_ui.vmid }}'
-        password: '{{ zwave_js_ui.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
-        config_task: zwave_js_ui
-        reverse_proxy_service: zwave_js_ui
-        reverse_proxy_hostname: '{{ zwave_js_ui.reverse_proxy_hostname }}'
-        service_port: 8091

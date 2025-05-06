@@ -60,13 +60,6 @@
     - dns
     - unbound
 
-- name: Get OpenSSL URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ openssl_src_url | regex_search('/openssl-([\\d.]+).tar.gz$', '\\1') | first }}"
-  tags:
-    - dns
-    - unbound
-
 - name: Check that /opt/openssl/include/openssl/opensslv.h exists
   ansible.builtin.stat:
     path: /opt/openssl/include/openssl/opensslv.h
@@ -96,9 +89,9 @@
 
 - name: Download latest OpenSSL
   ansible.builtin.get_url:
-    url: '{{ openssl_src_url }}'
+    url: 'https://www.openssl.org/source/openssl-{{ openssl_version }}.tar.gz'
     dest: /tmp/openssl.tar.gz
-  when: web_version != file_version.stdout
+  when: openssl_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -108,7 +101,7 @@
     src: /tmp/openssl.tar.gz
     dest: /tmp
     remote_src: true
-  when: web_version != file_version.stdout
+  when: openssl_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -117,7 +110,7 @@
   ansible.builtin.file:
     path: /tmp/openssl.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: openssl_version != file_version.stdout
   tags:
     - dns
     - unbound
@@ -125,17 +118,17 @@
 - name: Build OpenSSL
   ansible.builtin.shell:
     cmd: ./config --prefix=/opt/openssl --openssldir=/opt/openssl no-weak-ssl-ciphers no-ssl3 no-shared enable-ec_nistp_64_gcc_128 -DOPENSSL_NO_HEARTBEATS -fstack-protector-strong && make depend && make && make install_sw
-    chdir: '/tmp/openssl-{{ web_version }}'
-  when: web_version != file_version.stdout
+    chdir: '/tmp/openssl-{{ openssl_version }}'
+  when: openssl_version != file_version.stdout
   tags:
     - dns
     - unbound
 
 - name: Remove the OpenSSL build directory
   ansible.builtin.file:
-    path: '/tmp/openssl-{{ web_version }}'
+    path: '/tmp/openssl-{{ openssl_version }}'
     state: absent
-  when: web_version != file_version.stdout
+  when: openssl_version != file_version.stdout
   tags:
     - dns
     - unbound

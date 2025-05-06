@@ -22,14 +22,6 @@
     - pihole
     - pi_hole
 
-- name: Get pi-hole URL version
-  ansible.builtin.set_fact:
-    web_version: "{{ pihole_src_url | regex_search('/v([\\d.]+).tar.gz$', '\\1') | first }}"
-  tags:
-    - dns
-    - pihole
-    - pi_hole
-
 - name: Check that /opt/pihole/version.sh exists
   ansible.builtin.stat:
     path: /opt/pihole/version.sh
@@ -75,9 +67,9 @@
 
 - name: Download latest pi-hole
   ansible.builtin.get_url:
-    url: '{{ pihole_src_url }}'
+    url: 'https://github.com/pi-hole/pi-hole/archive/refs/tags/v{{ pihole_version }}.tar.gz'
     dest: /tmp/pi-hole.tar.gz
-  when: web_version != file_version.stdout
+  when: pihole_version != file_version.stdout
   tags:
     - dns
     - pihole
@@ -88,7 +80,7 @@
     src: /tmp/pi-hole.tar.gz
     dest: /tmp
     remote_src: true
-  when: web_version != file_version.stdout
+  when: pihole_version != file_version.stdout
   tags:
     - dns
     - pihole
@@ -98,7 +90,7 @@
   ansible.builtin.file:
     path: /tmp/unbound.tar.gz
     state: absent
-  when: web_version != file_version.stdout
+  when: pihole_version != file_version.stdout
   tags:
     - dns
     - pihole
@@ -107,8 +99,8 @@
 - name: Build pi-hole
   ansible.builtin.shell:
     cmd: ./basic-install.sh --unattended
-    chdir: '/tmp/pi-hole-{{ web_version }}/automated install'
-  when: web_version != file_version.stdout
+    chdir: '/tmp/pi-hole-{{ pihole_version }}/automated install'
+  when: pihole_version != file_version.stdout
   tags:
     - dns
     - pihole
@@ -116,9 +108,9 @@
 
 - name: Remove the pi-hole build directory
   ansible.builtin.file:
-    path: '/tmp/pi-hole-{{ web_version }}'
+    path: '/tmp/pi-hole-{{ pihole_version }}'
     state: absent
-  when: web_version != file_version.stdout
+  when: pihole_version != file_version.stdout
   tags:
     - dns
     - pihole

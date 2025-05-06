@@ -38,6 +38,7 @@
       - python3-venv
       - rdiff-backup
       - tk-dev
+      - unzip
       - xz-utils
       - zlib1g-dev
   tags:
