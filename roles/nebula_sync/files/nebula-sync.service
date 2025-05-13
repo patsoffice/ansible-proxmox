@@ -1,0 +1,21 @@
+[Unit]
+Description=Nebula-Sync Daemon
+
+[Service]
+User=nebulasync
+Group=nebulasync
+UMask=0002
+
+Type=simple
+WorkingDirectory=/config
+ExecStart=/opt/nebula-sync/bin/nebula-sync run --env-file /config/env
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+SyslogIdentifier=nebula-sync
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

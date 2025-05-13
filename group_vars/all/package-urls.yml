@@ -22,6 +22,8 @@ homeassistant_version: 2025.2.5
 lidarr_version: 2.11.2.4629
 # https://dl.min.io/server/minio/release/linux-amd64/
 minio_version: 20250422221226.0.0
+# https://github.com/lovelaze/nebula-sync/releases
+nebula_sync_version: 0.11.0
 # https://github.com/netbootxyz/netboot.xyz/releases
 netboot_xyz_version: 2.0.86
 # https://github.com/sct/overseerr/releases

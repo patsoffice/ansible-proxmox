@@ -113,6 +113,12 @@
   roles:
     - nas
 
+- hosts: nebula_sync_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - nebula_sync
+
 - hosts: netboot_xyz_hosts
   gather_facts: yes
   remote_user: root

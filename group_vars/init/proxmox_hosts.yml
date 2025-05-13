@@ -50,6 +50,16 @@ proxmox_hosts:
         reverse_proxy_service: nas0
         reverse_proxy_hostname: '{{ nas0.reverse_proxy_hostname }}'
         service_port: 9090
+      - hostname: '{{ nebula_sync.hostname }}'
+        vmid: '{{ nebula_sync.vmid }}'
+        password: '{{ nebula_sync.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 1
+        memory: 1024
+        swap: 2048
+        storage: 'local-zfs'
+        rootfs_size: 16
+        config_task: nebula_sync
       - hostname: '{{ tailscale001.hostname }}'
         vmid: '{{ tailscale001.vmid }}'
         password: '{{ tailscale001.password }}'

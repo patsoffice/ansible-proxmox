@@ -1,0 +1,91 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: nebulasync
+    groupname: nebulasync
+  tags:
+    - nebula_sync
+
+- import_tasks: appdir_and_mountpoints_v4.yml
+  vars:
+    appdirs:
+      - path: /config
+        owner: nebulasync
+        group: nebulasync
+      - path: /opt/nebula-sync/bin
+        owner: root
+        group: root
+  tags:
+    - nebula_sync
+
+- name: Check that /opt/nebula-sync/bin/nebula-sync exists
+  ansible.builtin.stat:
+    path: /opt/nebula-sync/bin/nebula-sync
+  register: nebula_sync_executable
+  tags:
+    - nebula_sync
+
+- name: Get the installed version
+  ansible.builtin.shell:
+    cmd: "/opt/nebula-sync/bin/nebula-sync --version 2>&1 | awk '{ print $3 }'  | sed 's/v=//'"
+  register: file_version
+  when: nebula_sync_executable.stat.exists
+  changed_when: false
+  tags:
+    - nebula_sync
+
+- name: Set a default nebula-sync file version
+  ansible.builtin.set_fact:
+    file_version:
+      stdout: 'missing'
+  when: file_version.stdout is undefined
+  tags:
+    - nebula_sync
+
+- name: Download nebula-sync
+  ansible.builtin.get_url:
+    url: 'https://github.com/lovelaze/nebula-sync/releases/download/v{{ nebula_sync_version }}/nebula-sync_{{ nebula_sync_version }}_linux_amd64.tar.gz'
+    dest: /opt/nebula_sync.tar.gz
+  when: nebula_sync_version != file_version.stdout
+  tags:
+    - nebula_sync
+
+- name: Extract the nebula-sync tarball
+  ansible.builtin.unarchive:
+    src: /opt/nebula_sync.tar.gz
+    dest: /opt/nebula-sync/bin
+    remote_src: true
+  when: nebula_sync_version != file_version.stdout
+  tags:
+    - nebula_sync
+
+- name: Remove the tarball
+  ansible.builtin.file:
+    path: /opt/nebula_sync.tar.gz
+    state: absent
+  when: nebula_sync_version != file_version.stdout
+  tags:
+    - nebula_sync
+
+- name: copy the nebula-sync env file
+  ansible.builtin.copy:
+    src: env
+    dest: /config/env
+    mode: 0600
+    owner: nebulasync
+    group: nebulasync
+  tags:
+    - nebula_sync
+
+- import_tasks: rsyslog_conf.yml
+  vars:
+    syslog_identifier: nebula-sync
+  tags:
+    - nebula_sync
+
+- import_tasks: systemd_unit.yml
+  vars:
+    systemd_unit: 'nebula-sync.service'
+    state: '{{ (nebula_sync_version != file_version.stdout) | ansible.builtin.ternary("restarted", "started") }}'
+  tags:
+    - nebula_sync
