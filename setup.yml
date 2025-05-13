@@ -95,6 +95,12 @@
   roles:
     - lidarr
 
+- hosts: minio_hosts
+  gather_facts: yes
+  remote_user: root
+  roles:
+    - minio
+
 - hosts: mqtt_hosts
   gather_facts: yes
   remote_user: root
@@ -125,11 +131,11 @@
   roles:
     - plex
 
-- hosts: octoprint_hosts
-  gather_facts: yes
-  remote_user: root
-  roles:
-    - octoprint
+# - hosts: octoprint_hosts
+#   gather_facts: yes
+#   remote_user: root
+#   roles:
+#     - octoprint
 
 - hosts: overseer_hosts
   gather_facts: yes
@@ -209,17 +215,17 @@
   roles:
     - valkey
 
-- hosts: zwave_js_ui_hosts
-  gather_facts: yes
-  remote_user: root
-  roles:
-    - zwave_js_ui
+# - hosts: zwave_js_ui_hosts
+#   gather_facts: yes
+#   remote_user: root
+#   roles:
+#     - zwave_js_ui
 
-- hosts: zigbee2mqtt_hosts
-  gather_facts: yes
-  remote_user: root
-  roles:
-    - zigbee2mqtt
+# - hosts: zigbee2mqtt_hosts
+#   gather_facts: yes
+#   remote_user: root
+#   roles:
+#     - zigbee2mqtt
 
 - hosts: home_assistant_hosts
   gather_facts: yes

@@ -88,7 +88,7 @@
 
 - name: Remove the pi-hole tarball
   ansible.builtin.file:
-    path: /tmp/unbound.tar.gz
+    path: /tmp/pi-hole.tar.gz
     state: absent
   when: pihole_version != file_version.stdout
   tags:

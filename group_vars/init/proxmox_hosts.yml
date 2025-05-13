@@ -16,6 +16,21 @@ proxmox_hosts:
     host_tasks:
       - zfsnap
     containers:
+      - hostname: '{{ minio.hostname }}'
+        vmid: '{{ minio.vmid }}'
+        password: '{{ minio.password }}'
+        ostemplate: 'ubuntu-22.04-standard_22.04-1_amd64.tar.zst'
+        cores: 2
+        memory: 2048
+        swap: 4096
+        storage: 'local-zfs'
+        rootfs_size: 16
+        config_changes:
+          - 'lxc.mount.entry: /tank/minio minio/ none rbind,create=dir,optional 0 0'
+        config_task: minio
+        reverse_proxy_service: minio
+        reverse_proxy_hostname: '{{ minio.reverse_proxy_hostname }}'
+        service_port: 9001
       - hostname: '{{ nas0.hostname }}'
         vmid: '{{ nas0.vmid }}'
         container_ip: '{{ nas0.container_ip }}'
@@ -29,7 +44,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.mount.entry: /tank tank/ none rbind,create=dir,optional 0 0'
         config_task: nas
@@ -48,7 +62,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
           - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
@@ -76,7 +89,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: caddy
       - hostname: '{{ calibre_content_server.hostname }}'
         vmid: '{{ calibre_content_server.vmid }}'
@@ -90,7 +102,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: 'calibre_content_server'
         reverse_proxy_service: 'calibre_content_server'
         reverse_proxy_hostname: '{{ calibre_content_server.reverse_proxy_hostname }}'
@@ -107,7 +118,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: 'calibre_web'
         reverse_proxy_service: 'calibre_web'
         reverse_proxy_hostname: '{{ calibre_web.reverse_proxy_hostname }}'
@@ -125,7 +135,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: dns
         reverse_proxy_service: 'dns1'
         reverse_proxy_hostname: '{{ dns1.reverse_proxy_hostname }}'
@@ -142,7 +151,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: drawio
         reverse_proxy_service: drawio
         reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
@@ -159,7 +167,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: grafana
         reverse_proxy_service: grafana
         reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
@@ -176,13 +183,12 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: home_assistant
       - hostname: '{{ idm0.hostname }}'
         vmid: '{{ idm0.vmid }}'
         password: '{{ idm0.password }}'
         container_ip: '{{ idm0.container_ip }}'
-        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        ostemplate: 'centos-9-stream-default_20240828_amd64.tar.xz'
         cores: 1
         memory: 4096
         swap: 4096
@@ -191,7 +197,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: idm_server
         reverse_proxy_service: idm0
         reverse_proxy_hostname: '{{ idm0.reverse_proxy_hostname }}'
@@ -208,31 +213,30 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: 'lidarr'
         reverse_proxy_service: 'lidarr'
         reverse_proxy_hostname: '{{ lidarr.reverse_proxy_hostname }}'
         service_port: 8686
-      - hostname: '{{ octoprint.hostname }}'
-        vmid: '{{ octoprint.vmid }}'
-        password: '{{ octoprint.password }}'
-        unprivileged: false
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 512
-        swap: 512
-        storage: 'local-zfs'
-        rootfs_size: 8
-        features:
-          - 'nesting=1'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
-        config_task: octoprint
-        reverse_proxy_service: octoprint
-        reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
-        service_port: 5000
+      # - hostname: '{{ octoprint.hostname }}'
+      #   vmid: '{{ octoprint.vmid }}'
+      #   password: '{{ octoprint.password }}'
+      #   unprivileged: false
+      #   ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+      #   cores: 1
+      #   memory: 512
+      #   swap: 512
+      #   storage: 'local-zfs'
+      #   rootfs_size: 8
+      #   features:
+      #     - 'nesting=1'
+    
+      #   config_changes:
+      #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+      #     - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
+      #   config_task: octoprint
+      #   reverse_proxy_service: octoprint
+      #   reverse_proxy_hostname: '{{ octoprint.reverse_proxy_hostname }}'
+      #   service_port: 5000
       - hostname: '{{ radarr.hostname }}'
         vmid: '{{ radarr.vmid }}'
         password: '{{ radarr.password }}'
@@ -245,7 +249,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: 'radarr'
         reverse_proxy_service: 'radarr'
         reverse_proxy_hostname: '{{ radarr.reverse_proxy_hostname }}'
@@ -262,7 +265,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: 'readarr'
         reverse_proxy_service: 'readarr'
         reverse_proxy_hostname: '{{ readarr.reverse_proxy_hostname }}'
@@ -279,7 +281,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: sonarr
         reverse_proxy_service: sonarr
         reverse_proxy_hostname: '{{ sonarr.reverse_proxy_hostname }}'
@@ -296,7 +297,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: syncthing
         reverse_proxy_service: syncthing
         reverse_proxy_hostname: '{{ syncthing.reverse_proxy_hostname }}'
@@ -313,7 +313,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
           - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
@@ -330,7 +329,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: tautulli
         reverse_proxy_service: tautulli
         reverse_proxy_hostname: '{{ tautulli.reverse_proxy_hostname }}'
@@ -348,7 +346,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 226:* rwm'
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
@@ -368,7 +365,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: transmission
         reverse_proxy_service: transmission
         reverse_proxy_hostname: '{{ transmission.reverse_proxy_hostname }}'
@@ -385,48 +381,47 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: test
-      - hostname: '{{ zigbee2mqtt.hostname }}'
-        vmid: '{{ zigbee2mqtt.vmid }}'
-        password: '{{ zigbee2mqtt.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/zigbee dev/zigbee none bind,optional,create=file'
-        config_task: zigbee2mqtt
-        reverse_proxy_service: zigbee2mqtt
-        reverse_proxy_hostname: '{{ zigbee2mqtt.reverse_proxy_hostname }}'
-        service_port: 8080
-      - hostname: '{{ zwave_js_ui.hostname }}'
-        vmid: '{{ zwave_js_ui.vmid }}'
-        password: '{{ zwave_js_ui.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        proxmox_default_behavior: compatibility
-        config_changes:
-          - 'lxc.cgroup2.devices.allow: c 166:* rwm'
-          - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
-        config_task: zwave_js_ui
-        reverse_proxy_service: zwave_js_ui
-        reverse_proxy_hostname: '{{ zwave_js_ui.reverse_proxy_hostname }}'
-        service_port: 8091
+      # - hostname: '{{ zigbee2mqtt.hostname }}'
+      #   vmid: '{{ zigbee2mqtt.vmid }}'
+      #   password: '{{ zigbee2mqtt.password }}'
+      #   ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+      #   cores: 1
+      #   memory: 1024
+      #   swap: 1024
+      #   storage: 'local-zfs'
+      #   rootfs_size: 16
+      #   features:
+      #     - 'nesting=1'
+      #     - 'mount=nfs'
+    
+      #   config_changes:
+      #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+      #     - 'lxc.mount.entry: /dev/zigbee dev/zigbee none bind,optional,create=file'
+      #   config_task: zigbee2mqtt
+      #   reverse_proxy_service: zigbee2mqtt
+      #   reverse_proxy_hostname: '{{ zigbee2mqtt.reverse_proxy_hostname }}'
+      #   service_port: 8080
+      # - hostname: '{{ zwave_js_ui.hostname }}'
+      #   vmid: '{{ zwave_js_ui.vmid }}'
+      #   password: '{{ zwave_js_ui.password }}'
+      #   ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+      #   cores: 1
+      #   memory: 1024
+      #   swap: 1024
+      #   storage: 'local-zfs'
+      #   rootfs_size: 16
+      #   features:
+      #     - 'nesting=1'
+      #     - 'mount=nfs'
+    
+      #   config_changes:
+      #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
+      #     - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
+      #   config_task: zwave_js_ui
+      #   reverse_proxy_service: zwave_js_ui
+      #   reverse_proxy_hostname: '{{ zwave_js_ui.reverse_proxy_hostname }}'
+      #   service_port: 8091
   pve005:
     api_host: '{{ pve005.api_host }}'
     api_user: '{{ pve005.api_user }}'
@@ -446,7 +441,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: caddy
       - hostname: '{{ dns0.hostname }}'
         vmid: '{{ dns0.vmid }}'
@@ -461,7 +455,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: dns
         reverse_proxy_service: 'dns0'
         reverse_proxy_hostname: '{{ dns0.reverse_proxy_hostname }}'
@@ -478,7 +471,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: esphome
         reverse_proxy_service: esphome
         reverse_proxy_hostname: '{{ esphome.reverse_proxy_hostname }}'
@@ -487,7 +479,7 @@ proxmox_hosts:
         vmid: '{{ idm1.vmid }}'
         password: '{{ idm1.password }}'
         container_ip: '{{ idm1.container_ip }}'
-        ostemplate: 'centos-9-stream-default_20221109_amd64.tar.xz'
+        ostemplate: 'centos-9-stream-default_20240828_amd64.tar.xz'
         cores: 1
         memory: 4096
         swap: 4096
@@ -496,7 +488,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: idm_replica
       - hostname: '{{ mqtt.hostname }}'
         vmid: '{{ mqtt.vmid }}'
@@ -510,7 +501,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: mqtt
       - hostname: '{{ netboot_xyz.hostname }}'
         vmid: '{{ netboot_xyz.vmid }}'
@@ -524,7 +514,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: netboot_xyz
         reverse_proxy_service: netboot_xyz
         reverse_proxy_hostname: '{{ netboot_xyz.reverse_proxy_hostname }}'
@@ -541,7 +530,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: node_red
         reverse_proxy_service: node_red
         reverse_proxy_hostname: '{{ node_red.reverse_proxy_hostname }}'
@@ -558,7 +546,6 @@ proxmox_hosts:
         rootfs_size: 8
         features:
           - 'nesting=1'
-        proxmox_default_behavior: compatibility
         config_task: overseer
         reverse_proxy_service: overseer
         reverse_proxy_hostname: '{{ overseer.reverse_proxy_hostname }}'
@@ -578,7 +565,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 226:* rwm'
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
@@ -600,7 +586,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: sabnzbd
         reverse_proxy_service: sabnzbd
         reverse_proxy_hostname: '{{ sabnzbd.reverse_proxy_hostname }}'
@@ -618,7 +603,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: syslog_ng
       - hostname: '{{ tailscale005.hostname }}'
         vmid: '{{ tailscale005.vmid }}'
@@ -632,7 +616,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 10:200 rwm'
           - 'lxc.mount.entry: /dev/net dev/net none bind,create=dir'
@@ -650,7 +633,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_changes:
           - 'lxc.cgroup2.devices.allow: c 226:* rwm'
           - 'lxc.mount.entry: /dev/dri/card0 dev/dri/card0 none bind,optional,create=file'
@@ -670,7 +652,6 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: tdarr_server
         reverse_proxy_service: tdarr
         reverse_proxy_hostname: '{{ tdarr_server.reverse_proxy_hostname }}'
@@ -687,5 +668,4 @@ proxmox_hosts:
         features:
           - 'nesting=1'
           - 'mount=nfs'
-        proxmox_default_behavior: compatibility
         config_task: valkey

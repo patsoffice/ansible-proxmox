@@ -70,7 +70,6 @@
     netif:
       net0: 'name=eth0,bridge=vmbr0,firewall=1,gw={{ container_gw }},ip={{ container_ip }}/{{ container_subnet_size }},type=veth'
     features: '{{ item.features | default([]) }}'
-    proxmox_default_behavior: '{{ item.proxmox_default_behaviors | default("no_defaults") }}'
   tags:
     - containers
 

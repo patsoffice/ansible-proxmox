@@ -1,0 +1,39 @@
+---
+- import_tasks: ubuntu_setup.yml
+  vars:
+    username: minio-user
+    groupname: minio-user
+  tags:
+    - minio
+
+- name: Install the minio package
+  ansible.builtin.apt:
+    deb: 'https://dl.min.io/server/minio/release/linux-amd64/minio_{{ minio_version }}_amd64.deb'
+  tags:
+    - minio
+
+- name: copy the minio config file
+  ansible.builtin.copy:
+    src: minio
+    dest: /etc/default/minio
+    mode: 0600
+    owner: root
+    group: root
+  tags:
+    - minio
+
+- name: enable and start minio
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: minio.service
+  tags:
+    - minio
+
+- import_tasks: unbound_external_dns.yml
+  tags:
+    - minio
+
+- import_tasks: reverse_proxy.yml
+  tags:
+    - minio
