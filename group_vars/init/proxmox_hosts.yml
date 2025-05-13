@@ -239,7 +239,6 @@ proxmox_hosts:
       #   rootfs_size: 8
       #   features:
       #     - 'nesting=1'
-    
       #   config_changes:
       #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
       #     - 'lxc.mount.entry: /dev/prusa dev/ttyACM0 none bind,optional,create=file'
@@ -404,7 +403,6 @@ proxmox_hosts:
       #   features:
       #     - 'nesting=1'
       #     - 'mount=nfs'
-    
       #   config_changes:
       #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
       #     - 'lxc.mount.entry: /dev/zigbee dev/zigbee none bind,optional,create=file'
@@ -424,7 +422,6 @@ proxmox_hosts:
       #   features:
       #     - 'nesting=1'
       #     - 'mount=nfs'
-    
       #   config_changes:
       #     - 'lxc.cgroup2.devices.allow: c 166:* rwm'
       #     - 'lxc.mount.entry: /dev/z-wave dev/z-wave none bind,optional,create=file'
