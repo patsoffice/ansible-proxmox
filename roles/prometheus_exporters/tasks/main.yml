@@ -8,5 +8,9 @@
 - name: Install smartctl_exporter
   ansible.builtin.import_role:
     name: prometheus.prometheus.smartctl_exporter
+  vars:
+    smartctl_exporter_smartctl_device_include: ".*"
+    smartctl_exporter_system_user: root
+    smartctl_exporter_system_group: root
   tags:
     - prometheus_exporters
