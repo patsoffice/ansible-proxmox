@@ -1,2 +1,4 @@
 ---
-- community.general
+collections:
+  - name: prometheus.prometheus
+    version: 0.26.2

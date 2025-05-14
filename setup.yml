@@ -16,6 +16,7 @@
     - udev
     - containers
     - proxmox_redirects
+    - prometheus_exporters
 
 # This sets up PCIe passthrough for VMs on these hosts. The hosts are defined
 # in global_vars/init/proxmox_hosts.yml

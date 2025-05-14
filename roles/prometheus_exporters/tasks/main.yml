@@ -1,0 +1,12 @@
+---
+- name: Install node-exporter
+  ansible.builtin.import_role:
+    name: prometheus.prometheus.node_exporter
+  tags:
+    - prometheus_exporters
+
+- name: Install smartctl_exporter
+  ansible.builtin.import_role:
+    name: prometheus.prometheus.smartctl_exporter
+  tags:
+    - prometheus_exporters
