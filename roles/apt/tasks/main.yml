@@ -31,6 +31,39 @@
   tags:
     - apt
 
+- name: "Gather installed packages"
+  ansible.builtin.package_facts:
+    manager: auto
+  tags:
+    - apt
+
+- name: "Install pve fake subscription"
+  when: '"pve-fake-subscription" not in ansible_facts.packages'
+  block:
+    - name: Get newest pve-fake-subscription release
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/Jamesits/pve-fake-subscription/releases/latest
+        return_content: true
+      register: json_reponse
+
+    - name: Create tmpdir
+      ansible.builtin.tempfile:
+        state: directory
+      register: tmpdir
+
+    - name: Download pve-fake-subscription
+      ansible.builtin.get_url:
+        url: "{{ json_reponse.json.assets[0].browser_download_url }}"
+        dest: "{{ tmpdir.path }}"
+        mode: "0644"
+      register: download
+
+    - name: Install pve-fake-subscription
+      ansible.builtin.apt:
+        deb: "{{ download.dest }}"
+  tags:
+    - apt
+
 - name: Run the equivalent of "apt-get update" as a separate step
   apt:
     update_cache: true
