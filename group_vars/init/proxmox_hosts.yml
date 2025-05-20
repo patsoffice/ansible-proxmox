@@ -165,22 +165,22 @@ proxmox_hosts:
         reverse_proxy_service: drawio
         reverse_proxy_hostname: '{{ drawio.reverse_proxy_hostname }}'
         service_port: 8080
-      - hostname: '{{ grafana.hostname }}'
-        vmid: '{{ grafana.vmid }}'
-        password: '{{ grafana.password }}'
-        ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
-        cores: 1
-        memory: 1024
-        swap: 1024
-        storage: 'local-zfs'
-        rootfs_size: 16
-        features:
-          - 'nesting=1'
-          - 'mount=nfs'
-        config_task: grafana
-        reverse_proxy_service: grafana
-        reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
-        service_port: 3000
+      # - hostname: '{{ grafana.hostname }}'
+      #   vmid: '{{ grafana.vmid }}'
+      #   password: '{{ grafana.password }}'
+      #   ostemplate: 'ubuntu-24.04-standard_24.04-2_amd64.tar.zst'
+      #   cores: 1
+      #   memory: 1024
+      #   swap: 1024
+      #   storage: 'local-zfs'
+      #   rootfs_size: 16
+      #   features:
+      #     - 'nesting=1'
+      #     - 'mount=nfs'
+      #   config_task: grafana
+      #   reverse_proxy_service: grafana
+      #   reverse_proxy_hostname: '{{ grafana.reverse_proxy_hostname }}'
+      #   service_port: 3000
       - hostname: '{{ home_assistant.hostname }}'
         vmid: '{{ home_assistant.vmid }}'
         password: '{{ home_assistant.password }}'
